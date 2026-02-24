@@ -1,0 +1,20 @@
+{
+  "name": "mosketh-ecommerce",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd apps/backend && npm run dev",
+    "dev:frontend": "cd apps/frontend && npm run dev",
+    "db:push": "cd apps/backend && npx prisma db push",
+    "db:seed": "cd apps/backend && node prisma/seed.js"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "axios": "^1.13.5",
+    "react-hot-toast": "^2.6.0",
+    "zustand": "^5.0.11"
+  }
+}

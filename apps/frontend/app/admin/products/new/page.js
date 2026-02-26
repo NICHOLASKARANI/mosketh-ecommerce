@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { api } from '../lib/api'
+import { useAuthStore } from '../../../../store/authStore'  // ← Changed from '../../../store/authStore'
+import { api } from '../../../../lib/api'  // ← Changed from '../../../lib/api'
 import toast from 'react-hot-toast'
 
 export default function NewProduct() {

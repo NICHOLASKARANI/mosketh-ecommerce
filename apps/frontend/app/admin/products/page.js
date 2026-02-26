@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { api } from '../lib/api'
+import { useAuthStore } from '../../../store/authStore'  // ← Changed
+import { api } from '../../../lib/api'  // ← Changed
 import { FaPlus, FaTrash } from 'react-icons/fa'
 import toast from 'react-hot-toast'
 

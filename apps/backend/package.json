@@ -4,10 +4,9 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon src/server.js",
+    "build": "prisma generate && node src/server.js",
     "start": "node src/server.js",
-    "prisma:generate": "prisma generate",
-    "prisma:push": "prisma db push",
-    "prisma:seed": "node prisma/seed.js"
+    "vercel-build": "prisma generate && prisma db push"
   },
   "dependencies": {
     "@prisma/client": "^5.9.1",

@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { api } from '../lib/api'
+import { useAuthStore } from '../../store/authStore'  // ← Changed
+import { api } from '../../lib/api'  // ← Changed
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({

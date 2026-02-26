@@ -19,30 +19,79 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', message: 'MosKeth Backend Running' })
 })
 
-// ==================== AUTH ====================
+// ==================== TEST ROUTES ====================
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'Test route working!', timestamp: new Date().toISOString() })
+})
+
+// TEMPORARY GET TEST FOR LOGIN ROUTE
+app.get('/api/auth/logintest', (req, res) => {
+  res.json({ message: 'Login GET route working!', timestamp: new Date().toISOString() })
+})
+
+// TEMPORARY POST TEST ROUTE
+app.post('/api/test-post', (req, res) => {
+  console.log('POST test received:', req.body)
+  res.json({ 
+    message: 'POST test working!', 
+    receivedData: req.body,
+    timestamp: new Date().toISOString() 
+  })
+})
+
+// ==================== AUTH ROUTES ====================
+// POST login - main login route - FIXED VERSION WITH LOGS
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body
+    console.log('=================================')
+    console.log('Login attempt received at:', new Date().toISOString())
+    console.log('Email:', email)
+    console.log('Password received:', password ? '[PROVIDED]' : '[MISSING]')
+    console.log('Request body:', req.body)
+    console.log('=================================')
 
+    // Validate input
+    if (!email || !password) {
+      console.log('Missing email or password')
+      return res.status(400).json({ error: 'Email and password are required' })
+    }
+
+    // Find user
+    console.log('Looking up user in database...')
     const user = await prisma.user.findUnique({
       where: { email }
     })
 
     if (!user) {
+      console.log('User not found in database:', email)
       return res.status(401).json({ error: 'Invalid credentials' })
     }
 
+    console.log('User found:', { id: user.id, email: user.email, role: user.role })
+
+    // Compare password
+    console.log('Comparing passwords...')
     const validPassword = await bcrypt.compare(password, user.password)
+    
     if (!validPassword) {
+      console.log('Password comparison FAILED for user:', email)
       return res.status(401).json({ error: 'Invalid credentials' })
     }
 
+    console.log('Password comparison SUCCESSFUL for user:', email)
+
+    // Generate token
     const token = jwt.sign(
       { id: user.id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     )
 
+    console.log('JWT token generated successfully')
+    console.log('Login successful for:', email)
+
+    // Send response
     res.json({
       success: true,
       data: {
@@ -56,9 +105,14 @@ app.post('/api/auth/login', async (req, res) => {
         }
       }
     })
+    
+    console.log('Response sent successfully')
   } catch (error) {
-    console.error('Login error:', error)
-    res.status(500).json({ error: 'Login failed' })
+    console.error('❌ Login error caught:', error)
+    console.error('Error name:', error.name)
+    console.error('Error message:', error.message)
+    console.error('Error stack:', error.stack)
+    res.status(500).json({ error: 'Login failed: ' + error.message })
   }
 })
 
@@ -109,6 +163,7 @@ app.get('/api/products/slug/:slug', async (req, res) => {
   }
 })
 
+// ==================== CATEGORIES ====================
 app.get('/api/categories', async (req, res) => {
   try {
     const categories = await prisma.category.findMany()
@@ -415,6 +470,7 @@ app.get('/api/admin/customers', verifyAdmin, async (req, res) => {
   }
 })
 
+// ==================== START SERVER ====================
 app.listen(PORT, () => {
   console.log(`🚀 Backend running on http://localhost:${PORT}`)
   console.log(`📍 Store: Shop F5, Superior Centre, Kimathi Street, Nairobi CBD`)

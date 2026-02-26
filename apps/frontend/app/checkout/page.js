@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useCartStore } from '../store/cartStore'
-import { useAuthStore } from '../store/authStore'
-import { api } from '../lib/api'
+import { useCartStore } from '../../store/cartStore'
+import { useAuthStore } from '../../store/authStore'
+import { api } from '../../lib/api'
 import toast from 'react-hot-toast'
 
 export default function CheckoutPage() {
@@ -12,14 +12,31 @@ export default function CheckoutPage() {
   const { items, total, clearCart } = useCartStore()
   const { user } = useAuthStore()
   const [loading, setLoading] = useState(false)
-
+  const [mounted, setMounted] = useState(false)
   const [formData, setFormData] = useState({
-    firstName: user?.firstName || '',
-    lastName: user?.lastName || '',
-    email: user?.email || '',
+    firstName: '',
+    lastName: '',
+    email: '',
     phone: '',
     address: ''
   })
+
+  // This ensures the component only renders on the client
+  useEffect(() => {
+    setMounted(true)
+    setFormData({
+      firstName: user?.firstName || '',
+      lastName: user?.lastName || '',
+      email: user?.email || '',
+      phone: '',
+      address: ''
+    })
+  }, [user])
+
+  // Don't render anything on the server
+  if (!mounted) {
+    return null
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()

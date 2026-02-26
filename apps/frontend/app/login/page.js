@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuthStore } from '../store/authStore'
+import { useAuthStore } from '@/store/authStore'
+import { api } from '@/lib/api'
 import toast from 'react-hot-toast'
 
 export default function LoginPage() {
@@ -20,10 +21,11 @@ export default function LoginPage() {
 
     try {
       await login(formData.email, formData.password)
-      toast.success('Login successful')
-      router.push('/')
+      toast.success('Login successful!')
+      router.push('/admin')
     } catch (error) {
-      toast.error('Login failed')
+      toast.error('Login failed. Please check your credentials.')
+      console.error('Login error:', error)
     } finally {
       setLoading(false)
     }
@@ -42,7 +44,8 @@ export default function LoginPage() {
               required
               value={formData.email}
               onChange={(e) => setFormData({...formData, email: e.target.value})}
-              className="form-input"
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              placeholder="admin@mosketh.co.ke"
             />
           </div>
 
@@ -53,14 +56,15 @@ export default function LoginPage() {
               required
               value={formData.password}
               onChange={(e) => setFormData({...formData, password: e.target.value})}
-              className="form-input"
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              placeholder="••••••••"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="btn-primary w-full"
+            className="w-full bg-primary-600 hover:bg-primary-700 text-white py-3 rounded-lg font-semibold transition-colors disabled:opacity-50"
           >
             {loading ? 'Logging in...' : 'Login'}
           </button>

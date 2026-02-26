@@ -3,7 +3,8 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useAuthStore } from '../store/authStore'
+import { useAuthStore } from '../../store/authStore'  // ← Changed
+import { api } from '../../lib/api'  // ← Changed
 import { FaTachometerAlt, FaBox, FaShoppingCart, FaUsers } from 'react-icons/fa'
 
 export default function AdminLayout({ children }) {

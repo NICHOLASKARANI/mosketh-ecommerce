@@ -8,106 +8,116 @@ datasource db {
 }
 
 model User {
-  id         String   @id @default(cuid())
-  email      String   @unique
-  password   String
-  firstName  String?
-  lastName   String?
-  role       String   @default("CUSTOMER")
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  orders     Order[]
-  cart       Cart?
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  firstName String?
+  lastName  String?
+  role      String   @default("CUSTOMER")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  phone     String?  @unique
+  cart      Cart?
+  orders    Order[]
 }
 
 model Category {
-  id       String    @id @default(cuid())
-  name     String    @unique
-  slug     String    @unique
-  products Product[]
-
-  @@map("categories")
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  image       String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
 }
 
 model Product {
-  id          String   @id @default(cuid())
-  name        String
-  slug        String   @unique
-  sku         String   @unique
-  priceKES    Float
-  stock       Int      @default(0)
-  description String
-  images      String[]
-  featured    Boolean  @default(false)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  categoryId String
-  category   Category @relation(fields: [categoryId], references: [id])
-
-  cartItems  CartItem[]
-  orderItems OrderItem[]
-
-  @@map("products")
+  id               String      @id @default(cuid())
+  name             String
+  slug             String      @unique
+  sku              String      @unique
+  priceKES         Float
+  comparePriceKES  Float?
+  priceUSD         Float?
+  comparePriceUSD  Float?
+  cost             Float?
+  stock            Int         @default(0)
+  lowStockAlert    Int         @default(5)
+  description      String
+  shortDescription String?
+  images           String[]
+  featured         Boolean     @default(false)
+  isActive         Boolean     @default(true)
+  views            Int         @default(0)
+  sales            Int         @default(0)
+  rating           Float       @default(0)
+  reviewCount      Int         @default(0)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  categoryId       String
+  cartItems        CartItem[]
+  orderItems       OrderItem[]
+  category         Category    @relation(fields: [categoryId], references: [id])
 }
 
 model Cart {
-  id        String   @id @default(cuid())
-  userId    String   @unique
+  id        String     @id @default(cuid())
+  userId    String     @unique
+  totalKES  Float      @default(0)
+  totalUSD  Float?     @default(0)
+  updatedAt DateTime   @updatedAt
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   items     CartItem[]
-  totalKES  Float    @default(0)
-  updatedAt DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id])
-
-  @@map("carts")
 }
 
 model CartItem {
-  id        String @id @default(cuid())
+  id        String  @id @default(cuid())
   cartId    String
   productId String
-  quantity  Int    @default(1)
+  quantity  Int     @default(1)
   priceKES  Float
-
-  cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id])
+  cart      Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
 
   @@unique([cartId, productId])
-  @@map("cart_items")
 }
 
 model Order {
-  id            String   @id @default(cuid())
-  orderNumber   String   @unique
-  userId        String
-  items         OrderItem[]
-  totalKES      Float
-  status        String   @default("PENDING")
-  customerName  String
-  customerEmail String
-  customerPhone String
+  id              String      @id @default(cuid())
+  orderNumber     String      @unique
+  userId          String
+  subtotalKES     Float
+  subtotalUSD     Float?
+  discountKES     Float       @default(0)
+  discountUSD     Float?      @default(0)
+  shippingKES     Float       @default(0)
+  shippingUSD     Float?      @default(0)
+  totalKES        Float
+  totalUSD        Float?
+  currency        String      @default("KES")
+  status          String      @default("PENDING")
+  paymentStatus   String      @default("PENDING")
+  paymentMethod   String
+  customerName    String
+  customerEmail   String
+  customerPhone   String
   shippingAddress String
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id])
-
-  @@map("orders")
+  notes           String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  user            User        @relation(fields: [userId], references: [id])
+  items           OrderItem[]
 }
 
 model OrderItem {
-  id        String @id @default(cuid())
+  id        String  @id @default(cuid())
   orderId   String
   productId String
   quantity  Int
   priceKES  Float
   totalKES  Float
-
-  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id])
-
-  @@map("order_items")
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
 }

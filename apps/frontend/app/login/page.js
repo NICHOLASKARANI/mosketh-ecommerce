@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useAuthStore } from '@/store/authStore'
-import { api } from '@/lib/api'
 import toast from 'react-hot-toast'
 
 export default function LoginPage() {
@@ -22,7 +22,14 @@ export default function LoginPage() {
     try {
       await login(formData.email, formData.password)
       toast.success('Login successful!')
-      router.push('/admin')
+      
+      // Check user role from store and redirect appropriately
+      const { user } = useAuthStore.getState()
+      if (user?.role === 'ADMIN') {
+        router.push('/admin')
+      } else {
+        router.push('/')
+      }
     } catch (error) {
       toast.error('Login failed. Please check your credentials.')
       console.error('Login error:', error)
@@ -44,7 +51,7 @@ export default function LoginPage() {
               required
               value={formData.email}
               onChange={(e) => setFormData({...formData, email: e.target.value})}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
               placeholder="admin@mosketh.co.ke"
             />
           </div>
@@ -56,7 +63,7 @@ export default function LoginPage() {
               required
               value={formData.password}
               onChange={(e) => setFormData({...formData, password: e.target.value})}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
               placeholder="••••••••"
             />
           </div>
@@ -70,10 +77,11 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-          <p className="text-sm font-medium mb-2">Admin Access:</p>
-          <p className="text-xs">Email: admin@mosketh.co.ke</p>
-          <p className="text-xs">Password: 207103Sultan12&crazy978222</p>
+        {/* Hidden admin note - only visible to developers */}
+        <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <p className="text-xs text-gray-500 mb-1">Developer Access Only:</p>
+          <p className="text-xs font-mono text-gray-600">Email: admin@mosketh.co.ke</p>
+          <p className="text-xs font-mono text-gray-600">Password: 207103Sultan12&crazy978222</p>
         </div>
       </div>
     </div>

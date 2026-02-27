@@ -1,8 +1,8 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { api } from '../lib/api'
+import { api } from '@/lib/api'
 
-const useAuthStore = create(
+export const useAuthStore = create(
   persist(
     (set) => ({
       user: null,
@@ -32,4 +32,7 @@ const useAuthStore = create(
   )
 )
 
-export { useAuthStore }
+// Create Provider component
+export const AuthProvider = ({ children }) => {
+  return <>{children}</>
+}

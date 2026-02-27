@@ -1,0 +1,21 @@
+{
+  "name": "MosKeth Perfumes & Beauty",
+  "short_name": "MosKeth",
+  "description": "Nairobi's #1 destination for authentic perfumes and beauty products",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ec4899",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

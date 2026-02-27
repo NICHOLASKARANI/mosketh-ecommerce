@@ -12,12 +12,18 @@ export default function AdminLayout({ children }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Check authentication status
-    if (!isAuthenticated || user?.role !== 'ADMIN') {
+    // Check authentication and admin role
+    if (!isAuthenticated) {
       router.push('/login')
-    } else {
-      setIsLoading(false)
+      return
     }
+    
+    if (user?.role !== 'ADMIN') {
+      router.push('/')
+      return
+    }
+    
+    setIsLoading(false)
   }, [isAuthenticated, user, router])
 
   const handleLogout = () => {
@@ -25,7 +31,6 @@ export default function AdminLayout({ children }) {
     router.push('/')
   }
 
-  // Show loading spinner while checking authentication
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -43,7 +48,7 @@ export default function AdminLayout({ children }) {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Admin Header - Only visible to admins */}
+      {/* Admin Header */}
       <header className="bg-white shadow-sm">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
@@ -64,7 +69,7 @@ export default function AdminLayout({ children }) {
             </div>
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-600">
-                {user?.firstName} {user?.lastName}
+                {user?.firstName} {user?.lastName} (Admin)
               </span>
               <button
                 onClick={handleLogout}

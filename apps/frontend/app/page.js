@@ -54,6 +54,8 @@ const defaultCategories = [
 async function fetchWithFallback(url, fallback, errorMessage) {
   try {
     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://mosketh-backend.vercel.app';
+    console.log(`Fetching from: ${API_URL}${url}`);
+    
     const res = await fetch(`${API_URL}${url}`, {
       cache: 'no-store',
       headers: { 'Content-Type': 'application/json' },

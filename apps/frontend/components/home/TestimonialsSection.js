@@ -1,37 +1,16 @@
-﻿import React from 'react';
+﻿'use client';
+
+import React from 'react';
 import { motion } from 'framer-motion';
 import { FaStar, FaStarHalf, FaQuoteLeft } from 'react-icons/fa';
 
 export default function TestimonialsSection({ testimonials = [] }) {
-  // Default testimonials if none provided
-  const defaultTestimonials = [
-    {
-      id: 1,
-      name: 'John Mwangi',
-      rating: 5,
-      comment: 'Amazing quality perfumes! Fast delivery and great customer service. Will definitely buy again.',
-      image: 'https://randomuser.me/api/portraits/men/1.jpg',
-      date: '2024-01-15'
-    },
-    {
-      id: 2,
-      name: 'Sarah Wanjiku',
-      rating: 5,
-      comment: 'I love my new perfume! The scent lasts all day and the price was very reasonable.',
-      image: 'https://randomuser.me/api/portraits/women/2.jpg',
-      date: '2024-01-10'
-    },
-    {
-      id: 3,
-      name: 'David Omondi',
-      rating: 4,
-      comment: 'Great selection of fragrances. The M-Pesa payment was seamless and easy.',
-      image: 'https://randomuser.me/api/portraits/men/3.jpg',
-      date: '2024-01-05'
-    }
-  ];
+  // Ensure we have testimonials to display
+  const displayTestimonials = testimonials && testimonials.length > 0 ? testimonials : [];
 
-  const displayTestimonials = testimonials.length > 0 ? testimonials : defaultTestimonials;
+  if (displayTestimonials.length === 0) {
+    return null; // Don't render section if no testimonials
+  }
 
   const renderStars = (rating) => {
     const stars = [];
@@ -62,7 +41,7 @@ export default function TestimonialsSection({ testimonials = [] }) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {displayTestimonials.map((testimonial, index) => (
             <motion.div
-              key={testimonial.id}
+              key={testimonial.id || index}
               className="bg-gray-50 rounded-xl p-6 shadow-lg relative"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -73,24 +52,27 @@ export default function TestimonialsSection({ testimonials = [] }) {
               
               <div className="flex items-center mb-4">
                 <img
-                  src={testimonial.image}
+                  src={testimonial.image || 'https://randomuser.me/api/portraits/lego/1.jpg'}
                   alt={testimonial.name}
                   className="w-12 h-12 rounded-full object-cover mr-4"
+                  onError={(e) => {
+                    e.target.src = 'https://randomuser.me/api/portraits/lego/1.jpg';
+                  }}
                 />
                 <div>
                   <h3 className="font-semibold text-gray-900">{testimonial.name}</h3>
                   <div className="flex text-sm text-gray-500">
-                    {new Date(testimonial.date).toLocaleDateString('en-KE', {
+                    {testimonial.date ? new Date(testimonial.date).toLocaleDateString('en-KE', {
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric'
-                    })}
+                    }) : 'Verified Customer'}
                   </div>
                 </div>
               </div>
 
               <div className="flex mb-3">
-                {renderStars(testimonial.rating)}
+                {renderStars(testimonial.rating || 5)}
               </div>
 
               <p className="text-gray-600 italic">{testimonial.comment}</p>

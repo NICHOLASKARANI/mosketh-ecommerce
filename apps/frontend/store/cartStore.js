@@ -1,4 +1,5 @@
-﻿import { create } from 'zustand';
+﻿import React from 'react';
+import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 export const useCartStore = create(
@@ -17,7 +18,6 @@ export const useCartStore = create(
   )
 );
 
-// Provider component for layout.js
 export const CartProvider = ({ children }) => {
   return children;
 };

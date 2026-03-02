@@ -1,6 +1,9 @@
 ﻿/** @type {import('next').NextConfig} */
 const nextConfig = {
-  // No TypeScript config needed
+  reactStrictMode: true,
+  images: {
+    domains: ['res.cloudinary.com'],
+  },
 }
 
 module.exports = nextConfig

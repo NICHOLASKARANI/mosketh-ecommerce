@@ -1,101 +1,94 @@
-﻿// app/page.js
+﻿import React from 'react';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
+import HeroSection from '@/components/home/HeroSection';
+import FeaturedProducts from '@/components/home/FeaturedProducts';
+import CategoryGrid from '@/components/home/CategoryGrid';
+import NewsletterSection from '@/components/home/NewsletterSection';
+import BenefitsSection from '@/components/home/BenefitsSection';
+import TestimonialsSection from '@/components/home/TestimonialsSection';
+import InstagramFeed from '@/components/social/InstagramFeed';
+import FloatingSocialWidget from '@/components/social/FloatingSocialWidget';
+import WhatsAppChatWidget from '@/components/social/WhatsAppChatWidget';
+import PromotionBanner from '@/components/ui/PromotionBanner';
+import LivePurchaseNotification from '@/components/ui/LivePurchaseNotification';
+import ExitIntentPopup from '@/components/ui/ExitIntentPopup';
+
 export const dynamic = 'force-dynamic';
 
-export default async function HomePage() {
-  let products = [];
-  
+async function getFeaturedProducts() {
   try {
     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://mosketh-backend.vercel.app';
-    // IMPORTANT: The line below has backticks ` around the template literal
-    const res = await fetch(`${API_URL}/api/products`, {
+    const res = await fetch(`${API_URL}/api/products?featured=true`, {
       cache: 'no-store',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
     });
-    
-    if (res.ok) {
-      const data = await res.json();
-      // Handle both possible response structures
-      products = data.data || data || [];
-    }
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.data || [];
   } catch (error) {
-    console.error('Error fetching products:', error.message);
+    console.error('Error fetching featured products:', error);
+    return [];
   }
+}
+
+async function getCategories() {
+  try {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://mosketh-backend.vercel.app';
+    const res = await fetch(`${API_URL}/api/categories`, {
+      cache: 'no-store',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.data || [];
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    return [];
+  }
+}
+
+async function getTestimonials() {
+  try {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://mosketh-backend.vercel.app';
+    const res = await fetch(`${API_URL}/api/testimonials`, {
+      cache: 'no-store',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.data || [];
+  } catch (error) {
+    console.error('Error fetching testimonials:', error);
+    return [];
+  }
+}
+
+export default async function HomePage() {
+  const [featuredProducts, categories, testimonials] = await Promise.all([
+    getFeaturedProducts(),
+    getCategories(),
+    getTestimonials()
+  ]);
 
   return (
-    <main style={{ 
-      maxWidth: '1200px', 
-      margin: '0 auto', 
-      padding: '20px',
-      fontFamily: 'system-ui, -apple-system, sans-serif'
-    }}>
-      <h1 style={{ 
-        fontSize: '2.5rem', 
-        textAlign: 'center', 
-        marginBottom: '2rem',
-        color: '#333'
-      }}>
-        Welcome to Mosketh Perfumes
-      </h1>
-      
-      <p style={{ 
-        textAlign: 'center', 
-        fontSize: '1.2rem', 
-        marginBottom: '3rem',
-        color: '#666'
-      }}>
-        Discover your signature scent
-      </p>
-      
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-        gap: '20px',
-        padding: '20px'
-      }}>
-        {products.length > 0 ? (
-          products.map((product) => (
-            <div key={product.id} style={{
-              border: '1px solid #eaeaea',
-              borderRadius: '8px',
-              padding: '15px',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-            }}>
-              {product.images && product.images[0] && (
-                <img 
-                  src={product.images[0]} 
-                  alt={product.name}
-                  style={{
-                    width: '100%',
-                    height: '200px',
-                    objectFit: 'cover',
-                    borderRadius: '4px',
-                    marginBottom: '10px'
-                  }}
-                />
-              )}
-              <h3 style={{ margin: '10px 0', fontSize: '1.2rem' }}>
-                {product.name}
-              </h3>
-              <p style={{ color: '#666', marginBottom: '10px' }}>
-                {product.shortDescription?.substring(0, 100)}...
-              </p>
-              <p style={{ 
-                fontSize: '1.5rem', 
-                fontWeight: 'bold', 
-                color: '#0070f3' 
-              }}>
-                KES {product.priceKES}
-              </p>
-            </div>
-          ))
-        ) : (
-          <p style={{ textAlign: 'center', gridColumn: '1/-1' }}>
-            No products available at the moment.
-          </p>
-        )}
-      </div>
-    </main>
+    <>
+      <Header />
+      <PromotionBanner />
+      <main>
+        <HeroSection />
+        <BenefitsSection />
+        <FeaturedProducts products={featuredProducts} />
+        <CategoryGrid categories={categories} />
+        <TestimonialsSection testimonials={testimonials} />
+        <InstagramFeed />
+        <NewsletterSection />
+      </main>
+      <Footer />
+      <FloatingSocialWidget />
+      <WhatsAppChatWidget />
+      <LivePurchaseNotification />
+      <ExitIntentPopup />
+    </>
   );
 }

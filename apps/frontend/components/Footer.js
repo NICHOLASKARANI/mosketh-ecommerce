@@ -1,3 +1,4 @@
+﻿import React from 'react';
 export default function Footer() {
   return (
     <footer className="bg-gray-900 text-white py-12">
@@ -24,7 +25,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
-          <p>© {new Date().getFullYear()} MosKeth Beauty & Perfumes. All rights reserved.</p>
+          <p>Â© {new Date().getFullYear()} MosKeth Beauty & Perfumes. All rights reserved.</p>
         </div>
       </div>
     </footer>

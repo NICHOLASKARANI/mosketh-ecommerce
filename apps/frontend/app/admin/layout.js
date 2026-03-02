@@ -1,6 +1,6 @@
-'use client'
+﻿'use client'
 
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/authStore'
@@ -13,80 +13,65 @@ export default function AdminLayout({ children }) {
 
   useEffect(() => {
     // Check authentication and admin role
-    if (!isAuthenticated) {
-      router.push('/login')
-      return
+    const checkAuth = async () => {
+      if (!isAuthenticated) {
+        router.push('/login')
+        return
+      }
+      
+      // Check if user is admin
+      if (user?.role !== 'admin') {
+        router.push('/')
+        return
+      }
+      
+      setIsLoading(false)
     }
     
-    if (user?.role !== 'ADMIN') {
-      router.push('/')
-      return
-    }
-    
-    setIsLoading(false)
-  }, [isAuthenticated, user, router])
-
-  const handleLogout = () => {
-    logout()
-    router.push('/')
-  }
+    checkAuth()
+  }, [isAuthenticated, router, user])
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-600 border-t-transparent"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
       </div>
     )
   }
 
-  const navItems = [
-    { name: 'Dashboard', href: '/admin', icon: FaTachometerAlt },
-    { name: 'Products', href: '/admin/products', icon: FaBox },
-    { name: 'Orders', href: '/admin/orders', icon: FaShoppingCart },
-    { name: 'Customers', href: '/admin/customers', icon: FaUsers },
-  ]
-
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Admin Header */}
-      <header className="bg-white shadow-sm">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-8">
-              <span className="text-xl font-bold text-primary-600">MosKeth Admin</span>
-              <nav className="hidden md:flex items-center gap-6">
-                {navItems.map(item => (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className="flex items-center gap-2 text-gray-600 hover:text-primary-600 transition-colors"
-                  >
-                    <item.icon className="w-4 h-4" />
-                    {item.name}
-                  </Link>
-                ))}
-              </nav>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">
-                {user?.firstName} {user?.lastName} (Admin)
-              </span>
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 text-red-600 hover:text-red-700 transition-colors"
-              >
-                <FaSignOutAlt className="w-4 h-4" />
-                <span className="hidden md:inline">Logout</span>
-              </button>
-            </div>
-          </div>
+      {/* Admin Sidebar */}
+      <div className="fixed inset-y-0 left-0 w-64 bg-purple-800 text-white">
+        <div className="p-6">
+          <h2 className="text-2xl font-bold">Mosketh Admin</h2>
         </div>
-      </header>
+        <nav className="mt-6">
+          <Link href="/admin" className="flex items-center px-6 py-3 hover:bg-purple-700 transition">
+            <FaTachometerAlt className="mr-3" /> Dashboard
+          </Link>
+          <Link href="/admin/products" className="flex items-center px-6 py-3 hover:bg-purple-700 transition">
+            <FaBox className="mr-3" /> Products
+          </Link>
+          <Link href="/admin/orders" className="flex items-center px-6 py-3 hover:bg-purple-700 transition">
+            <FaShoppingCart className="mr-3" /> Orders
+          </Link>
+          <Link href="/admin/customers" className="flex items-center px-6 py-3 hover:bg-purple-700 transition">
+            <FaUsers className="mr-3" /> Customers
+          </Link>
+          <button 
+            onClick={logout}
+            className="w-full flex items-center px-6 py-3 hover:bg-purple-700 transition mt-auto absolute bottom-0 left-0"
+          >
+            <FaSignOutAlt className="mr-3" /> Logout
+          </button>
+        </nav>
+      </div>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <div className="ml-64 p-8">
         {children}
-      </main>
+      </div>
     </div>
   )
 }

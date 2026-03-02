@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
@@ -40,12 +40,12 @@ export default function Header() {
       name: 'Shop', 
       href: '/products',
       dropdown: [
-        { name: "Men's Perfumes", href: '/perfumes/men', icon: '👔' },
-        { name: "Women's Perfumes", href: '/perfumes/women', icon: '👗' },
-        { name: 'Unisex Perfumes', href: '/perfumes/unisex', icon: '👥' },
-        { name: 'Body Oils', href: '/body-oils', icon: '💧' },
-        { name: 'Face Creams', href: '/face-creams', icon: '🧴' },
-        { name: 'Hair Products', href: '/hair-products', icon: '💇' },
+        { name: "Men's Perfumes", href: '/perfumes/men', icon: 'ðŸ‘”' },
+        { name: "Women's Perfumes", href: '/perfumes/women', icon: 'ðŸ‘—' },
+        { name: 'Unisex Perfumes', href: '/perfumes/unisex', icon: 'ðŸ‘¥' },
+        { name: 'Body Oils', href: '/body-oils', icon: 'ðŸ’§' },
+        { name: 'Face Creams', href: '/face-creams', icon: 'ðŸ§´' },
+        { name: 'Hair Products', href: '/hair-products', icon: 'ðŸ’‡' },
       ]
     },
     { name: 'Men', href: '/perfumes/men' },

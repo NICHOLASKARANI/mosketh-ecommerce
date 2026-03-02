@@ -86,7 +86,6 @@ export default function FloatingSocialWidget() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Auto-open on scroll to attract attention
   useEffect(() => {
     if (scrollPosition > 300 && !isOpen) {
       setIsOpen(true);
@@ -138,7 +137,6 @@ export default function FloatingSocialWidget() {
         )}
       </AnimatePresence>
 
-      {/* Toggle Button */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
         className={`mt-3 ${isOpen ? 'bg-red-500 hover:bg-red-600' : 'bg-purple-600 hover:bg-purple-700'} text-white p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110`}

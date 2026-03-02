@@ -1,16 +1,9 @@
-﻿// components/layout/SocialMediaBar.js
+﻿import React from 'react';
+
 export default function SocialMediaBar() {
   return (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'center',
-      gap: '20px',
-      padding: '10px',
-      backgroundColor: '#f5f5f5'
-    }}>
-      <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">Facebook</a>
-      <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">Instagram</a>
-      <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">Twitter</a>
+    <div style={{ background: '#374151', padding: '0.5rem', textAlign: 'center' }}>
+      <span style={{ color: 'white' }}>Follow us on social media</span>
     </div>
   );
 }

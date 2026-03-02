@@ -1,6 +1,7 @@
 ﻿import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+// Create the store hook
 export const useCartStore = create(
   persist(
     (set) => ({
@@ -16,3 +17,9 @@ export const useCartStore = create(
     { name: 'cart-storage' }
   )
 );
+
+// Add a Provider component that just renders children
+// This satisfies the import in layout.js
+export const CartProvider = ({ children }) => {
+  return children;
+};

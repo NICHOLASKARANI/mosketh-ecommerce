@@ -1,6 +1,6 @@
 ﻿/** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Let Vercel handle env vars
+  // No TypeScript config needed
 }
 
 module.exports = nextConfig

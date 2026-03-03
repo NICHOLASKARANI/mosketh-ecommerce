@@ -50,7 +50,6 @@ async function getCategories() {
 }
 
 async function getTestimonials() {
-  // Fallback testimonials
   return [
     {
       id: 1,

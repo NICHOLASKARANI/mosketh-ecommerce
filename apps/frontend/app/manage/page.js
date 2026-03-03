@@ -6,7 +6,7 @@ import {
   FaBox, FaShoppingCart, FaUsers, FaEye, 
   FaPlus, FaEdit, FaTrash, FaUpload, FaImage, 
   FaTachometerAlt, FaSignOutAlt, FaSave, FaSpinner,
-  FaChartBar, FaList, FaCog
+  FaChartBar, FaList, FaCog, FaTimes
 } from 'react-icons/fa';
 
 export default function ManagePage() {
@@ -31,7 +31,6 @@ export default function ManagePage() {
   const [imagePreview, setImagePreview] = useState(null);
   const [uploading, setUploading] = useState(false);
 
-  // Admin credentials - NOT autofilled, user must type
   const ADMIN_EMAIL = 'moskethbeautytouch@gmail.com';
   const ADMIN_PASSWORD = '@Sultan12&crazy207103';
 
@@ -103,14 +102,12 @@ export default function ManagePage() {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://mosketh-backend.vercel.app';
       
-      // Validate required fields
       if (!newProduct.name || !newProduct.priceKES || !newProduct.stock) {
         alert('Please fill all required fields');
         setLoading(false);
         return;
       }
 
-      // Prepare product data
       const productData = {
         name: newProduct.name,
         priceKES: parseInt(newProduct.priceKES),
@@ -122,8 +119,6 @@ export default function ManagePage() {
         featured: newProduct.featured || false,
         slug: newProduct.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
       };
-
-      console.log('Sending product:', productData);
 
       const response = await fetch(`${API_URL}/api/products`, {
         method: 'POST',
@@ -141,9 +136,7 @@ export default function ManagePage() {
       const result = await response.json();
       
       if (result.success) {
-        alert('✅ Product added successfully! It will appear on the site immediately.');
-        
-        // Reset form
+        alert('✅ Product added successfully!');
         setNewProduct({
           name: '',
           priceKES: '',
@@ -155,11 +148,7 @@ export default function ManagePage() {
           featured: false
         });
         setImagePreview(null);
-        
-        // Refresh products list
         await fetchProducts();
-        
-        // Switch to products tab to see the new product
         setActiveTab('products');
       } else {
         alert('❌ Failed to add product: ' + (result.error || 'Unknown error'));
@@ -191,7 +180,6 @@ export default function ManagePage() {
     }
   };
 
-  // Login Page - No autofill, user must type credentials
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center p-4">
@@ -201,6 +189,7 @@ export default function ManagePage() {
               src="/logo.png" 
               alt="Mosketh Logo" 
               className="w-20 h-20 mx-auto mb-4 rounded-full border-4 border-purple-100"
+              onError={(e) => e.target.src = 'https://via.placeholder.com/80?text=Mosketh'}
             />
             <h1 className="text-3xl font-bold text-gray-800">Admin Login</h1>
             <p className="text-gray-600 mt-2">Enter your credentials to continue</p>
@@ -249,14 +238,13 @@ export default function ManagePage() {
     );
   }
 
-  // Admin Dashboard
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
       <div className="bg-white shadow-lg sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="Mosketh" className="w-10 h-10 rounded-full" />
+            <img src="/logo.png" alt="Mosketh" className="w-10 h-10 rounded-full" onError={(e) => e.target.src = 'https://via.placeholder.com/40?text=M'} />
             <h1 className="text-2xl font-bold text-purple-600">Mosketh Admin</h1>
           </div>
           <button
@@ -332,21 +320,6 @@ export default function ManagePage() {
                 </div>
               </div>
             </div>
-
-            {/* Category Distribution */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h3 className="text-lg font-semibold mb-4">Products by Category</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {['mens-perfumes', 'womens-perfumes', 'unisex-perfumes', 'body-oils', 'face-creams', 'hair-products', 'gift-sets'].map(cat => (
-                  <div key={cat} className="bg-gray-50 p-3 rounded-lg">
-                    <p className="text-sm text-gray-600">{cat.replace('-', ' ')}</p>
-                    <p className="text-xl font-bold text-purple-600">
-                      {products.filter(p => p.category === cat).length}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
         )}
 
@@ -356,7 +329,6 @@ export default function ManagePage() {
             <h2 className="text-2xl font-bold mb-6">Add New Product</h2>
             
             <form onSubmit={handleAddProduct} className="space-y-6">
-              {/* Image Upload */}
               <div>
                 <label className="block text-sm font-medium mb-2">Product Image (JPEG/PNG)</label>
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
@@ -402,7 +374,6 @@ export default function ManagePage() {
                 </div>
               </div>
 
-              {/* Product Name */}
               <div>
                 <label className="block text-sm font-medium mb-2">Product Name *</label>
                 <input
@@ -415,7 +386,6 @@ export default function ManagePage() {
                 />
               </div>
 
-              {/* Price and Stock */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Price (KES) *</label>
@@ -444,7 +414,6 @@ export default function ManagePage() {
                 </div>
               </div>
 
-              {/* Category */}
               <div>
                 <label className="block text-sm font-medium mb-2">Category *</label>
                 <select
@@ -462,7 +431,6 @@ export default function ManagePage() {
                 </select>
               </div>
 
-              {/* Short Description */}
               <div>
                 <label className="block text-sm font-medium mb-2">Short Description</label>
                 <input
@@ -475,7 +443,6 @@ export default function ManagePage() {
                 />
               </div>
 
-              {/* Full Description */}
               <div>
                 <label className="block text-sm font-medium mb-2">Full Description *</label>
                 <textarea
@@ -488,7 +455,6 @@ export default function ManagePage() {
                 />
               </div>
 
-              {/* Featured Checkbox */}
               <div className="flex items-center">
                 <input
                   type="checkbox"
@@ -502,7 +468,6 @@ export default function ManagePage() {
                 </label>
               </div>
 
-              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={loading}
@@ -517,7 +482,7 @@ export default function ManagePage() {
         {/* Products Tab */}
         {activeTab === 'products' && (
           <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-2xl font-bold mb-6">All Products</h2>
+            <h2 className="text-2xl font-bold mb-6">All Products ({products.length})</h2>
             
             {products.length === 0 ? (
               <div className="text-center py-12">
@@ -546,16 +511,17 @@ export default function ManagePage() {
                   </thead>
                   <tbody className="divide-y divide-gray-200">
                     {products.map((product) => (
-                      <tr key={product.id}>
+                      <tr key={product.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4">
                           <img 
                             src={product.images?.[0] || '/logo.png'} 
                             alt={product.name}
                             className="w-12 h-12 object-cover rounded"
+                            onError={(e) => e.target.src = 'https://via.placeholder.com/48?text=P'}
                           />
                         </td>
                         <td className="px-6 py-4 font-medium">{product.name}</td>
-                        <td className="px-6 py-4">KES {product.priceKES}</td>
+                        <td className="px-6 py-4">KES {product.priceKES?.toLocaleString()}</td>
                         <td className="px-6 py-4 capitalize">{product.category?.replace('-', ' ') || 'N/A'}</td>
                         <td className="px-6 py-4">
                           <span className={`px-2 py-1 rounded text-sm ${
@@ -572,7 +538,8 @@ export default function ManagePage() {
                         <td className="px-6 py-4">
                           <button 
                             onClick={() => handleDeleteProduct(product.id)}
-                            className="text-red-600 hover:text-red-800"
+                            className="text-red-600 hover:text-red-800 p-2 hover:bg-red-50 rounded-lg transition"
+                            title="Delete product"
                           >
                             <FaTrash />
                           </button>

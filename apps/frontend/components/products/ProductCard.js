@@ -2,7 +2,6 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useCartStore } from '@/store/cartStore';
 import { FaShoppingCart, FaHeart, FaEye } from 'react-icons/fa';
 
@@ -15,7 +14,8 @@ export default function ProductCard({ product }) {
     addItem(product);
   };
 
-  // Ensure product has all required fields
+  if (!product) return null;
+
   const safeProduct = {
     id: product.id || Math.random().toString(),
     name: product.name || 'Unnamed Product',
@@ -23,18 +23,20 @@ export default function ProductCard({ product }) {
     slug: product.slug || '#',
     images: product.images && product.images.length > 0 ? product.images : ['/logo.png'],
     shortDescription: product.shortDescription || product.description?.substring(0, 100) || 'Luxury fragrance',
+    description: product.description || '',
     stock: product.stock || 0,
     featured: product.featured || false
   };
 
   return (
-    <div className="group relative bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+    <div className="group relative bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 flex flex-col h-full">
       {/* Image Container */}
-      <Link href={`/product/${safeProduct.slug}`} className="block relative h-64 overflow-hidden">
+      <Link href={`/product/${safeProduct.slug}`} className="block relative pt-[100%] overflow-hidden bg-gray-100">
         <img
           src={safeProduct.images[0]}
           alt={safeProduct.name}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          onError={(e) => e.target.src = 'https://via.placeholder.com/400?text=Mosketh'}
         />
         
         {/* Overlay with quick actions */}
@@ -84,37 +86,52 @@ export default function ProductCard({ product }) {
         )}
       </Link>
 
-      {/* Product Info */}
-      <div className="p-5">
-        <Link href={`/product/${safeProduct.slug}`}>
-          <h3 className="text-lg font-semibold text-gray-800 hover:text-purple-600 transition-colors line-clamp-2 min-h-[56px]">
+      {/* Product Info - Responsive Layout */}
+      <div className="p-5 flex flex-col flex-grow">
+        <Link href={`/product/${safeProduct.slug}`} className="flex-grow">
+          <h3 className="text-lg font-semibold text-gray-800 hover:text-purple-600 transition-colors line-clamp-2 mb-2">
             {safeProduct.name}
           </h3>
         </Link>
         
-        <p className="text-sm text-gray-500 mt-2 line-clamp-2 min-h-[40px]">
+        <p className="text-sm text-gray-500 line-clamp-2 mb-4">
           {safeProduct.shortDescription}
         </p>
         
-        <div className="mt-4 flex items-center justify-between">
-          <span className="text-2xl font-bold text-purple-600">
-            KES {safeProduct.priceKES?.toLocaleString()}
-          </span>
-        </div>
+        {/* Description (visible on larger screens) */}
+        {safeProduct.description && (
+          <p className="text-sm text-gray-600 line-clamp-3 mb-4 hidden md:block">
+            {safeProduct.description}
+          </p>
+        )}
+        
+        {/* Price - Prominently displayed at bottom */}
+        <div className="mt-auto">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-2xl font-bold text-purple-600">
+              KES {safeProduct.priceKES?.toLocaleString()}
+            </span>
+            {safeProduct.stock > 0 && safeProduct.stock <= 5 && (
+              <span className="text-xs text-orange-500 font-medium md:hidden">
+                Only {safeProduct.stock} left
+              </span>
+            )}
+          </div>
 
-        {/* Add to Cart Button */}
-        <button
-          onClick={handleAddToCart}
-          disabled={safeProduct.stock === 0}
-          className={`mt-4 w-full py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
-            safeProduct.stock > 0
-              ? 'bg-purple-600 text-white hover:bg-purple-700 hover:shadow-lg'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-          }`}
-        >
-          <FaShoppingCart />
-          {safeProduct.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
-        </button>
+          {/* Add to Cart Button */}
+          <button
+            onClick={handleAddToCart}
+            disabled={safeProduct.stock === 0}
+            className={`w-full py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
+              safeProduct.stock > 0
+                ? 'bg-purple-600 text-white hover:bg-purple-700 hover:shadow-lg active:bg-purple-800'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
+          >
+            <FaShoppingCart />
+            {safeProduct.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
+          </button>
+        </div>
       </div>
     </div>
   );

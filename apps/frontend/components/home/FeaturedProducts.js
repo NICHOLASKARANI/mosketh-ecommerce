@@ -1,11 +1,10 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import Link from 'next/link';
 import ProductCard from '@/components/products/ProductCard';
 
 export default function FeaturedProducts({ products }) {
-  // Ensure products is an array
   const safeProducts = Array.isArray(products) ? products : [];
 
   if (safeProducts.length === 0) {

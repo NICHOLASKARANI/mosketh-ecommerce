@@ -15,7 +15,18 @@ import PromotionBanner from '@/components/ui/PromotionBanner';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-async function getFeaturedProducts() {
+// Client component to get localStorage products
+async function getLocalStorageProducts() {
+  'use client';
+  // This will run on client side only
+  if (typeof window !== 'undefined') {
+    const saved = localStorage.getItem('mosketh_products');
+    return saved ? JSON.parse(saved) : [];
+  }
+  return [];
+}
+
+async function getAPIFeaturedProducts() {
   try {
     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://mosketh-backend.vercel.app';
     const res = await fetch(`${API_URL}/api/products?featured=true`, {
@@ -25,67 +36,17 @@ async function getFeaturedProducts() {
     
     if (!res.ok) return [];
     const data = await res.json();
-    // Ensure we always return an array
     return Array.isArray(data.data) ? data.data : [];
   } catch (error) {
-    console.error('Error fetching featured products:', error);
+    console.error('Error fetching API products:', error);
     return [];
   }
 }
 
-async function getCategories() {
-  try {
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://mosketh-backend.vercel.app';
-    const res = await fetch(`${API_URL}/api/categories`, {
-      cache: 'no-store',
-      headers: { 'Content-Type': 'application/json' },
-    });
-    
-    if (!res.ok) return [];
-    const data = await res.json();
-    return Array.isArray(data.data) ? data.data : [];
-  } catch (error) {
-    console.error('Error fetching categories:', error);
-    return [];
-  }
-}
-
-async function getTestimonials() {
-  return [
-    {
-      id: 1,
-      name: 'John Mwangi',
-      rating: 5,
-      comment: 'Amazing quality perfumes! Fast delivery and great customer service. Will definitely buy again.',
-      image: 'https://randomuser.me/api/portraits/men/1.jpg',
-      date: '2024-01-15'
-    },
-    {
-      id: 2,
-      name: 'Sarah Wanjiku',
-      rating: 5,
-      comment: 'I love my new perfume! The scent lasts all day and the price was very reasonable.',
-      image: 'https://randomuser.me/api/portraits/women/2.jpg',
-      date: '2024-01-10'
-    },
-    {
-      id: 3,
-      name: 'David Omondi',
-      rating: 4,
-      comment: 'Great selection of fragrances. The M-Pesa payment was seamless and easy.',
-      image: 'https://randomuser.me/api/portraits/men/3.jpg',
-      date: '2024-01-05'
-    }
-  ];
-}
-
+// This is a workaround - we'll use a client component for products
 export default async function HomePage() {
-  const [featuredProducts, categories, testimonials] = await Promise.all([
-    getFeaturedProducts(),
-    getCategories(),
-    getTestimonials()
-  ]);
-
+  const apiProducts = await getAPIFeaturedProducts();
+  
   return (
     <>
       <Header />
@@ -93,9 +54,10 @@ export default async function HomePage() {
       <main>
         <HeroSection />
         <BenefitsSection />
-        <FeaturedProducts products={featuredProducts} />
-        <CategoryGrid categories={categories} />
-        <TestimonialsSection testimonials={testimonials} />
+        {/* Use client component for products */}
+        <ClientProductWrapper apiProducts={apiProducts} />
+        <CategoryGrid />
+        <TestimonialsSection />
         <InstagramFeed />
         <NewsletterSection />
       </main>
@@ -104,4 +66,36 @@ export default async function HomePage() {
       <WhatsAppChatWidget />
     </>
   );
+}
+
+// Client component to merge API and localStorage products
+function ClientProductWrapper({ apiProducts }) {
+  const [products, setProducts] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    // Get localStorage products
+    let localProducts = [];
+    try {
+      const saved = localStorage.getItem('mosketh_products');
+      localProducts = saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      console.error('Error reading localStorage:', e);
+    }
+
+    // Merge and deduplicate by id
+    const allProducts = [...apiProducts, ...localProducts];
+    const uniqueProducts = Array.from(new Map(allProducts.map(p => [p.id, p])).values());
+    
+    // Filter featured
+    const featured = uniqueProducts.filter(p => p.featured === true);
+    setProducts(featured);
+    setLoading(false);
+  }, [apiProducts]);
+
+  if (loading) {
+    return <div className="text-center py-8">Loading products...</div>;
+  }
+
+  return <FeaturedProducts products={products} />;
 }

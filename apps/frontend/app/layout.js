@@ -16,6 +16,26 @@ export const metadata = {
   title: 'Mosketh Perfumes & Beauty - Luxury Fragrances in Kenya',
   description: 'Shop authentic luxury perfumes and beauty products in Kenya. Fast delivery nationwide with M-Pesa payments.',
   keywords: 'perfumes Kenya, luxury fragrances, beauty products, authentic perfumes, Nairobi',
+  icons: {
+    icon: '/logo.png', // For browser tab
+    apple: '/logo.png', // For Apple devices
+    shortcut: '/logo.png',
+  },
+  openGraph: {
+    title: 'Mosketh Perfumes & Beauty',
+    description: 'Luxury fragrances and beauty products in Kenya',
+    url: 'https://moskethperfumesandbeauty.com',
+    siteName: 'Mosketh Perfumes & Beauty',
+    images: [
+      {
+        url: '/logo.png', // Image shown when sharing on social media
+        width: 800,
+        height: 800,
+      },
+    ],
+    locale: 'en_KE',
+    type: 'website',
+  },
 }
 
 export default function RootLayout({ children }) {

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { FaShoppingCart, FaHeart, FaUser, FaSearch, FaBars, FaTimes } from 'react-icons/fa';
 import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
@@ -27,14 +28,25 @@ export default function Header() {
     <header className="bg-white shadow-md sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
-          {/* Logo */}
+          {/* Logo with Image */}
           <Link href="/" className="flex items-center space-x-2">
-            <span className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 text-transparent bg-clip-text">
-              MosKeth
-            </span>
-            <span className="text-sm text-gray-600 font-light">BEAUTY&PERFUMES</span>
+            <Image 
+              src="/logo.png"  // If saved in public folder
+              // OR use direct URL: src="https://i.ibb.co/your-image/logo.png"
+              alt="Mosketh Perfumes & Beauty"
+              width={50}
+              height={50}
+              className="object-contain"
+            />
+            <div className="flex flex-col">
+              <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 text-transparent bg-clip-text leading-tight">
+                MosKeth
+              </span>
+              <span className="text-xs text-gray-600 font-light tracking-wider">BEAUTY&PERFUMES</span>
+            </div>
           </Link>
 
+          {/* Rest of the header remains the same... */}
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
             <Link href="/" className="text-gray-700 hover:text-purple-600 transition font-medium">
@@ -53,7 +65,6 @@ export default function Header() {
 
           {/* Right Icons */}
           <div className="flex items-center space-x-4">
-            {/* Search */}
             <button
               onClick={() => setIsSearchOpen(!isSearchOpen)}
               className="text-gray-600 hover:text-purple-600 transition"
@@ -61,7 +72,6 @@ export default function Header() {
               <FaSearch size={20} />
             </button>
 
-            {/* Wishlist */}
             <Link href="/wishlist" className="text-gray-600 hover:text-purple-600 transition relative">
               <FaHeart size={20} />
               {wishlistCount > 0 && (
@@ -71,7 +81,6 @@ export default function Header() {
               )}
             </Link>
 
-            {/* Cart */}
             <Link href="/cart" className="text-gray-600 hover:text-purple-600 transition relative">
               <FaShoppingCart size={20} />
               {cartCount > 0 && (
@@ -81,12 +90,10 @@ export default function Header() {
               )}
             </Link>
 
-            {/* User/Admin */}
-            <Link href="/admin" className="text-gray-600 hover:text-purple-600 transition">
+            <Link href="/manage" className="text-gray-600 hover:text-purple-600 transition">
               <FaUser size={20} />
             </Link>
 
-            {/* Mobile menu button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="md:hidden text-gray-600 hover:text-purple-600 transition"

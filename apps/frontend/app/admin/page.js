@@ -2,15 +2,21 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { FaBox, FaShoppingCart, FaUsers, FaEye, FaStar, FaPlus, FaEdit, FaTrash, FaUpload, FaImage } from 'react-icons/fa';
+import { 
+  FaBox, FaShoppingCart, FaUsers, FaEye, FaStar, 
+  FaPlus, FaEdit, FaTrash, FaUpload, FaImage, 
+  FaTachometerAlt, FaSignOutAlt, FaSave, FaTimes 
+} from 'react-icons/fa';
 
 export default function AdminDashboard() {
+  const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('dashboard');
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [newProduct, setNewProduct] = useState({
     name: '',
     priceKES: '',
@@ -23,6 +29,12 @@ export default function AdminDashboard() {
   });
   const [imagePreview, setImagePreview] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [stats, setStats] = useState({
+    totalProducts: 0,
+    totalOrders: 0,
+    totalCustomers: 0,
+    totalRevenue: 0
+  });
 
   // Admin credentials
   const ADMIN_EMAIL = 'moskethbeautytouch@gmail.com';
@@ -33,6 +45,7 @@ export default function AdminDashboard() {
     if (auth === 'true') {
       setIsAuthenticated(true);
       fetchProducts();
+      fetchStats();
     }
   }, []);
 
@@ -47,12 +60,24 @@ export default function AdminDashboard() {
     }
   };
 
+  const fetchStats = async () => {
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://mosketh-backend.vercel.app';
+      const res = await fetch(`${API_URL}/api/admin/stats`);
+      const data = await res.json();
+      setStats(data.data || stats);
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+  };
+
   const handleLogin = (e) => {
     e.preventDefault();
     if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
       setIsAuthenticated(true);
       localStorage.setItem('adminAuth', 'true');
       fetchProducts();
+      fetchStats();
       setError('');
     } else {
       setError('Invalid email or password');
@@ -62,12 +87,14 @@ export default function AdminDashboard() {
   const handleLogout = () => {
     setIsAuthenticated(false);
     localStorage.removeItem('adminAuth');
+    router.push('/');
   };
 
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
+    // Check if it's a JPEG
     if (file.type !== 'image/jpeg') {
       alert('Please upload a JPEG image');
       return;
@@ -75,10 +102,12 @@ export default function AdminDashboard() {
 
     setUploading(true);
     
+    // Create preview
     const reader = new FileReader();
     reader.onloadend = () => {
       setImagePreview(reader.result);
       
+      // Simulate upload to server
       setTimeout(() => {
         setNewProduct({
           ...newProduct,
@@ -93,6 +122,7 @@ export default function AdminDashboard() {
 
   const handleAddProduct = async (e) => {
     e.preventDefault();
+    setLoading(true);
     
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://mosketh-backend.vercel.app';
@@ -109,7 +139,7 @@ export default function AdminDashboard() {
       });
 
       if (response.ok) {
-        alert('Product added successfully!');
+        alert('✅ Product added successfully!');
         setNewProduct({
           name: '',
           priceKES: '',
@@ -122,13 +152,39 @@ export default function AdminDashboard() {
         });
         setImagePreview(null);
         fetchProducts();
+        fetchStats();
+      } else {
+        alert('❌ Failed to add product');
       }
     } catch (error) {
       console.error('Error adding product:', error);
-      alert('Failed to add product');
+      alert('❌ Error adding product');
+    } finally {
+      setLoading(false);
     }
   };
 
+  const handleDeleteProduct = async (productId) => {
+    if (!confirm('Are you sure you want to delete this product?')) return;
+    
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://mosketh-backend.vercel.app';
+      const response = await fetch(`${API_URL}/api/products/${productId}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        alert('✅ Product deleted successfully');
+        fetchProducts();
+        fetchStats();
+      }
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      alert('❌ Error deleting product');
+    }
+  };
+
+  // If not authenticated, show login form
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center p-4">
@@ -179,49 +235,149 @@ export default function AdminDashboard() {
     );
   }
 
+  // Main Admin Dashboard
   return (
     <div className="min-h-screen bg-gray-100">
-      <div className="bg-white shadow">
+      {/* Header */}
+      <div className="bg-white shadow-lg sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-purple-600">Mosketh Admin Dashboard</h1>
+          <div className="flex items-center space-x-2">
+            <h1 className="text-2xl font-bold text-purple-600">Mosketh Admin</h1>
+            <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">Live</span>
+          </div>
           <button
             onClick={handleLogout}
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+            className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
           >
-            Logout
+            <FaSignOutAlt /> Logout
           </button>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-4">
-        <div className="flex space-x-4 border-b">
+      {/* Navigation Tabs */}
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="flex space-x-4 border-b overflow-x-auto pb-1">
           <button
             onClick={() => setActiveTab('dashboard')}
-            className={`px-4 py-2 font-medium ${activeTab === 'dashboard' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-gray-500'}`}
+            className={`px-4 py-2 font-medium whitespace-nowrap ${activeTab === 'dashboard' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-gray-500 hover:text-gray-700'}`}
           >
-            Dashboard
+            <FaTachometerAlt className="inline mr-2" /> Dashboard
           </button>
           <button
             onClick={() => setActiveTab('add-product')}
-            className={`px-4 py-2 font-medium ${activeTab === 'add-product' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-gray-500'}`}
+            className={`px-4 py-2 font-medium whitespace-nowrap ${activeTab === 'add-product' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-gray-500 hover:text-gray-700'}`}
           >
-            Add Product
+            <FaPlus className="inline mr-2" /> Add Product
           </button>
           <button
             onClick={() => setActiveTab('products')}
-            className={`px-4 py-2 font-medium ${activeTab === 'products' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-gray-500'}`}
+            className={`px-4 py-2 font-medium whitespace-nowrap ${activeTab === 'products' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-gray-500 hover:text-gray-700'}`}
           >
-            Manage Products
+            <FaBox className="inline mr-2" /> Manage Products
+          </button>
+          <button
+            onClick={() => setActiveTab('orders')}
+            className={`px-4 py-2 font-medium whitespace-nowrap ${activeTab === 'orders' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-gray-500 hover:text-gray-700'}`}
+          >
+            <FaShoppingCart className="inline mr-2" /> Orders
           </button>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      {/* Content Area */}
+      <div className="max-w-7xl mx-auto px-4 pb-12">
+        {/* Dashboard Tab */}
+        {activeTab === 'dashboard' && (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-gray-800">Dashboard Overview</h2>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-white rounded-xl shadow-lg p-6 transform hover:scale-105 transition">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-500 text-sm">Total Products</p>
+                    <p className="text-4xl font-bold text-gray-800">{stats.totalProducts || products.length}</p>
+                  </div>
+                  <FaBox className="text-purple-600 text-5xl opacity-50" />
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-xl shadow-lg p-6 transform hover:scale-105 transition">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-500 text-sm">Total Orders</p>
+                    <p className="text-4xl font-bold text-gray-800">{stats.totalOrders}</p>
+                  </div>
+                  <FaShoppingCart className="text-green-600 text-5xl opacity-50" />
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-xl shadow-lg p-6 transform hover:scale-105 transition">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-500 text-sm">Total Customers</p>
+                    <p className="text-4xl font-bold text-gray-800">{stats.totalCustomers}</p>
+                  </div>
+                  <FaUsers className="text-blue-600 text-5xl opacity-50" />
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-xl shadow-lg p-6 transform hover:scale-105 transition">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-500 text-sm">Revenue (KES)</p>
+                    <p className="text-4xl font-bold text-gray-800">{stats.totalRevenue.toLocaleString()}</p>
+                  </div>
+                  <FaEye className="text-yellow-600 text-5xl opacity-50" />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              <h3 className="text-xl font-bold mb-4">Recent Products</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Image</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stock</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {products.slice(0, 5).map((product) => (
+                      <tr key={product.id}>
+                        <td className="px-6 py-4">
+                          {product.images && product.images[0] && (
+                            <img src={product.images[0]} alt={product.name} className="w-12 h-12 object-cover rounded" />
+                          )}
+                        </td>
+                        <td className="px-6 py-4">{product.name}</td>
+                        <td className="px-6 py-4">KES {product.priceKES}</td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2 py-1 rounded text-sm ${
+                            product.stock > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          }`}>
+                            {product.stock}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Add Product Tab */}
         {activeTab === 'add-product' && (
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white rounded-xl shadow-lg p-6">
             <h2 className="text-2xl font-bold mb-6">Add New Product</h2>
             
             <form onSubmit={handleAddProduct} className="space-y-6">
+              {/* Image Upload */}
               <div>
                 <label className="block text-sm font-medium mb-2">Product Image (800x800 JPEG)</label>
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
@@ -255,18 +411,20 @@ export default function AdminDashboard() {
                         onChange={handleImageUpload}
                         className="hidden"
                         id="image-upload"
+                        disabled={uploading}
                       />
                       <label
                         htmlFor="image-upload"
-                        className="inline-block bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 cursor-pointer"
+                        className="inline-block bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 cursor-pointer disabled:bg-gray-400"
                       >
-                        <FaUpload className="inline mr-2" /> Choose Image
+                        {uploading ? 'Uploading...' : <><FaUpload className="inline mr-2" /> Choose Image</>}
                       </label>
                     </div>
                   )}
                 </div>
               </div>
 
+              {/* Product Name */}
               <div>
                 <label className="block text-sm font-medium mb-2">Product Name</label>
                 <input
@@ -279,6 +437,7 @@ export default function AdminDashboard() {
                 />
               </div>
 
+              {/* Price */}
               <div>
                 <label className="block text-sm font-medium mb-2">Price (KES)</label>
                 <input
@@ -292,6 +451,7 @@ export default function AdminDashboard() {
                 />
               </div>
 
+              {/* Category */}
               <div>
                 <label className="block text-sm font-medium mb-2">Category</label>
                 <select
@@ -308,6 +468,7 @@ export default function AdminDashboard() {
                 </select>
               </div>
 
+              {/* Short Description */}
               <div>
                 <label className="block text-sm font-medium mb-2">Short Description</label>
                 <input
@@ -321,6 +482,7 @@ export default function AdminDashboard() {
                 />
               </div>
 
+              {/* Full Description */}
               <div>
                 <label className="block text-sm font-medium mb-2">Full Description</label>
                 <textarea
@@ -333,6 +495,7 @@ export default function AdminDashboard() {
                 />
               </div>
 
+              {/* Stock */}
               <div>
                 <label className="block text-sm font-medium mb-2">Stock Quantity</label>
                 <input
@@ -346,6 +509,7 @@ export default function AdminDashboard() {
                 />
               </div>
 
+              {/* Featured Checkbox */}
               <div className="flex items-center">
                 <input
                   type="checkbox"
@@ -359,14 +523,91 @@ export default function AdminDashboard() {
                 </label>
               </div>
 
+              {/* Submit Button */}
               <button
                 type="submit"
-                disabled={uploading || !newProduct.images.length}
-                className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed"
+                disabled={loading || uploading || !newProduct.images.length}
+                className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                {uploading ? 'Uploading...' : 'Add Product'}
+                {loading ? 'Adding...' : <><FaSave /> Add Product</>}
               </button>
             </form>
+          </div>
+        )}
+
+        {/* Manage Products Tab */}
+        {activeTab === 'products' && (
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <h2 className="text-2xl font-bold mb-6">Manage Products</h2>
+            
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Image</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stock</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {products.map((product) => (
+                    <tr key={product.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4">
+                        {product.images && product.images[0] && (
+                          <img 
+                            src={product.images[0]} 
+                            alt={product.name}
+                            className="w-12 h-12 object-cover rounded"
+                          />
+                        )}
+                      </td>
+                      <td className="px-6 py-4 font-medium">{product.name}</td>
+                      <td className="px-6 py-4">KES {product.priceKES}</td>
+                      <td className="px-6 py-4">{product.category?.name || 'N/A'}</td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2 py-1 rounded text-sm ${
+                          product.stock > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}>
+                          {product.stock}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <button className="text-blue-600 hover:text-blue-800 mr-3">
+                          <FaEdit />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteProduct(product.id)}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          <FaTrash />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {products.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-gray-500">No products added yet.</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Orders Tab */}
+        {activeTab === 'orders' && (
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <h2 className="text-2xl font-bold mb-6">Orders</h2>
+            <div className="text-center py-12 text-gray-500">
+              <FaShoppingCart className="text-5xl mx-auto mb-4 opacity-50" />
+              <p>No orders yet.</p>
+              <p className="text-sm mt-2">Orders will appear here once customers make purchases.</p>
+            </div>
           </div>
         )}
       </div>

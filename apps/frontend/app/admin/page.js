@@ -1,11 +1,10 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaBox, FaShoppingCart, FaUsers, FaEye, FaStar, FaPlus, FaEdit, FaTrash, FaUpload, FaImage } from 'react-icons/fa';
 
 export default function AdminDashboard() {
-  const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -69,29 +68,24 @@ export default function AdminDashboard() {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Check if it's a JPEG
     if (file.type !== 'image/jpeg') {
       alert('Please upload a JPEG image');
       return;
     }
 
-    // Check dimensions (simulated - in production you'd check on server)
     setUploading(true);
     
-    // Create preview
     const reader = new FileReader();
     reader.onloadend = () => {
       setImagePreview(reader.result);
       
-      // In production, you'd upload to Cloudinary here
-      // For now, we'll simulate with a placeholder
       setTimeout(() => {
         setNewProduct({
           ...newProduct,
-          images: [reader.result] // In production, this would be the Cloudinary URL
+          images: [reader.result]
         });
         setUploading(false);
-        alert('Image uploaded successfully! (800x800 JPEG)');
+        alert('Image uploaded successfully! (800x800 JPEG recommended)');
       }, 1500);
     };
     reader.readAsDataURL(file);
@@ -103,7 +97,6 @@ export default function AdminDashboard() {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://mosketh-backend.vercel.app';
       
-      // In production, you'd send to your backend
       const response = await fetch(`${API_URL}/api/products`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -188,7 +181,6 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Header */}
       <div className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-purple-600">Mosketh Admin Dashboard</h1>
@@ -201,7 +193,6 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Navigation Tabs */}
       <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex space-x-4 border-b">
           <button
@@ -222,37 +213,15 @@ export default function AdminDashboard() {
           >
             Manage Products
           </button>
-          <button
-            onClick={() => setActiveTab('orders')}
-            className={`px-4 py-2 font-medium ${activeTab === 'orders' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-gray-500'}`}
-          >
-            Orders
-          </button>
         </div>
       </div>
 
-      {/* Content Area */}
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {activeTab === 'dashboard' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white rounded-lg shadow p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-500 text-sm">Total Products</p>
-                  <p className="text-3xl font-bold text-gray-800">{products.length}</p>
-                </div>
-                <FaBox className="text-purple-600 text-4xl" />
-              </div>
-            </div>
-          </div>
-        )}
-
         {activeTab === 'add-product' && (
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-2xl font-bold mb-6">Add New Product</h2>
             
             <form onSubmit={handleAddProduct} className="space-y-6">
-              {/* Image Upload */}
               <div>
                 <label className="block text-sm font-medium mb-2">Product Image (800x800 JPEG)</label>
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
@@ -298,7 +267,6 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              {/* Product Name */}
               <div>
                 <label className="block text-sm font-medium mb-2">Product Name</label>
                 <input
@@ -311,7 +279,6 @@ export default function AdminDashboard() {
                 />
               </div>
 
-              {/* Price */}
               <div>
                 <label className="block text-sm font-medium mb-2">Price (KES)</label>
                 <input
@@ -325,7 +292,6 @@ export default function AdminDashboard() {
                 />
               </div>
 
-              {/* Category */}
               <div>
                 <label className="block text-sm font-medium mb-2">Category</label>
                 <select
@@ -342,7 +308,6 @@ export default function AdminDashboard() {
                 </select>
               </div>
 
-              {/* Short Description */}
               <div>
                 <label className="block text-sm font-medium mb-2">Short Description</label>
                 <input
@@ -356,7 +321,6 @@ export default function AdminDashboard() {
                 />
               </div>
 
-              {/* Full Description */}
               <div>
                 <label className="block text-sm font-medium mb-2">Full Description</label>
                 <textarea
@@ -369,7 +333,6 @@ export default function AdminDashboard() {
                 />
               </div>
 
-              {/* Stock */}
               <div>
                 <label className="block text-sm font-medium mb-2">Stock Quantity</label>
                 <input
@@ -383,7 +346,6 @@ export default function AdminDashboard() {
                 />
               </div>
 
-              {/* Featured Checkbox */}
               <div className="flex items-center">
                 <input
                   type="checkbox"
@@ -397,7 +359,6 @@ export default function AdminDashboard() {
                 </label>
               </div>
 
-              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={uploading || !newProduct.images.length}
@@ -406,60 +367,6 @@ export default function AdminDashboard() {
                 {uploading ? 'Uploading...' : 'Add Product'}
               </button>
             </form>
-          </div>
-        )}
-
-        {activeTab === 'products' && (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-2xl font-bold mb-6">Manage Products</h2>
-            
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {products.map((product) => (
-                    <tr key={product.id}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {product.images && product.images[0] && (
-                          <img 
-                            src={product.images[0]} 
-                            alt={product.name}
-                            className="w-12 h-12 object-cover rounded"
-                          />
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">{product.name}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">KES {product.priceKES}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">{product.category?.name || 'N/A'}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 rounded text-sm ${
-                          product.stock > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}>
-                          {product.stock}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <button className="text-blue-600 hover:text-blue-800 mr-3">
-                          <FaEdit />
-                        </button>
-                        <button className="text-red-600 hover:text-red-800">
-                          <FaTrash />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
           </div>
         )}
       </div>

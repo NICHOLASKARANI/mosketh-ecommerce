@@ -22,7 +22,6 @@ export const useCartStore = create(
           set({ items: [...currentItems, { ...product, quantity: 1 }] });
         }
         
-        // Show success message
         if (typeof window !== 'undefined') {
           alert(`${product.name} added to cart!`);
         }

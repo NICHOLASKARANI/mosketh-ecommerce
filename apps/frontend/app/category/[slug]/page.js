@@ -6,16 +6,35 @@ import Link from 'next/link';
 import { FaArrowLeft } from 'react-icons/fa';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 async function getCategoryProducts(slug) {
   try {
     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://mosketh-backend.vercel.app';
-    const res = await fetch(`${API_URL}/api/products?category=${slug}`, {
+    
+    // Map category slugs to API expected format
+    const categoryMap = {
+      'mens-perfumes': 'mens-perfumes',
+      'womens-perfumes': 'womens-perfumes',
+      'unisex-perfumes': 'unisex-perfumes',
+      'body-oils': 'body-oils',
+      'face-creams': 'face-creams',
+      'hair-products': 'hair-products',
+      'gift-sets': 'gift-sets'
+    };
+
+    const apiCategory = categoryMap[slug] || slug;
+    
+    const res = await fetch(`${API_URL}/api/products?category=${apiCategory}`, {
       cache: 'no-store',
       headers: { 'Content-Type': 'application/json' },
     });
     
-    if (!res.ok) return [];
+    if (!res.ok) {
+      console.warn(`API returned ${res.status} for category ${slug}`);
+      return [];
+    }
+    
     const data = await res.json();
     return data.data || [];
   } catch (error) {

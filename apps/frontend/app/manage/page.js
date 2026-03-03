@@ -1,60 +1,66 @@
 ﻿'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { 
+  FaBox, FaShoppingCart, FaUsers, FaEye, 
+  FaPlus, FaEdit, FaTrash, FaUpload, FaImage, 
+  FaTachometerAlt, FaSignOutAlt, FaSave, FaSpinner,
+  FaChartBar, FaList, FaCog
+} from 'react-icons/fa';
 
 export default function ManagePage() {
-  const [email, setEmail] = useState('moskethbeautytouch@gmail.com');
-  const [password, setPassword] = useState('@Sultan12&crazy207103');
+  const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [products, setProducts] = useState([]);
-  const [orders, setOrders] = useState([]);
-  const [customers, setCustomers] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [newProduct, setNewProduct] = useState({
     name: '',
-    price: '',
+    priceKES: '',
     category: 'mens-perfumes',
     description: '',
+    shortDescription: '',
     stock: '',
-    image: null
+    images: [],
+    featured: false
   });
   const [imagePreview, setImagePreview] = useState(null);
-  const [isUploading, setIsUploading] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
+  // Admin credentials - NOT autofilled, user must type
   const ADMIN_EMAIL = 'moskethbeautytouch@gmail.com';
   const ADMIN_PASSWORD = '@Sultan12&crazy207103';
 
-  // Mock data for demonstration
   useEffect(() => {
-    if (isLoggedIn) {
-      // Sample products
-      setProducts([
-        { id: 1, name: 'Vulcan Feu by French Avenue', price: 4000, category: 'mens-perfumes', stock: 10, image: 'https://via.placeholder.com/100' },
-        { id: 2, name: 'Ameerat Al Arab by Asdaaf', price: 2500, category: 'womens-perfumes', stock: 5, image: 'https://via.placeholder.com/100' },
-        { id: 3, name: 'Oud Wood', price: 3500, category: 'unisex-perfumes', stock: 8, image: 'https://via.placeholder.com/100' },
-      ]);
-      
-      // Sample orders
-      setOrders([
-        { id: 'ORD001', customer: 'John Mwangi', amount: 4000, status: 'completed', date: '2024-03-01' },
-        { id: 'ORD002', customer: 'Sarah Wanjiku', amount: 2500, status: 'pending', date: '2024-03-02' },
-        { id: 'ORD003', customer: 'David Omondi', amount: 7500, status: 'processing', date: '2024-03-03' },
-      ]);
-      
-      // Sample customers
-      setCustomers([
-        { id: 1, name: 'John Mwangi', email: 'john@example.com', orders: 3, spent: 12000 },
-        { id: 2, name: 'Sarah Wanjiku', email: 'sarah@example.com', orders: 2, spent: 5000 },
-        { id: 3, name: 'David Omondi', email: 'david@example.com', orders: 5, spent: 25000 },
-      ]);
+    const auth = localStorage.getItem('adminAuth');
+    if (auth === 'true') {
+      setIsAuthenticated(true);
+      fetchProducts();
     }
-  }, [isLoggedIn]);
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://mosketh-backend.vercel.app';
+      const res = await fetch(`${API_URL}/api/products`);
+      if (!res.ok) throw new Error('Failed to fetch');
+      const data = await res.json();
+      setProducts(data.data || []);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    }
+  };
 
   const handleLogin = (e) => {
     e.preventDefault();
     if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-      setIsLoggedIn(true);
+      setIsAuthenticated(true);
+      localStorage.setItem('adminAuth', 'true');
+      fetchProducts();
       setError('');
     } else {
       setError('Invalid email or password');
@@ -62,156 +68,178 @@ export default function ManagePage() {
   };
 
   const handleLogout = () => {
-    setIsLoggedIn(false);
+    setIsAuthenticated(false);
+    localStorage.removeItem('adminAuth');
+    router.push('/');
   };
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setIsUploading(true);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-        setNewProduct({...newProduct, image: reader.result});
-        setIsUploading(false);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    if (!file.type.includes('jpeg') && !file.type.includes('jpg') && !file.type.includes('png')) {
+      alert('Please upload a JPEG or PNG image');
+      return;
     }
+
+    setUploading(true);
+    
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result);
+      setNewProduct({
+        ...newProduct,
+        images: [reader.result]
+      });
+      setUploading(false);
+    };
+    reader.readAsDataURL(file);
   };
 
-  const handleAddProduct = (e) => {
+  const handleAddProduct = async (e) => {
     e.preventDefault();
-    const newId = products.length + 1;
-    setProducts([...products, { ...newProduct, id: newId, price: parseInt(newProduct.price), stock: parseInt(newProduct.stock) }]);
-    alert('Product added successfully!');
-    setNewProduct({ name: '', price: '', category: 'mens-perfumes', description: '', stock: '', image: null });
-    setImagePreview(null);
-  };
+    setLoading(true);
+    
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://mosketh-backend.vercel.app';
+      
+      // Validate required fields
+      if (!newProduct.name || !newProduct.priceKES || !newProduct.stock) {
+        alert('Please fill all required fields');
+        setLoading(false);
+        return;
+      }
 
-  const handleDeleteProduct = (id) => {
-    if (confirm('Are you sure you want to delete this product?')) {
-      setProducts(products.filter(p => p.id !== id));
+      // Prepare product data
+      const productData = {
+        name: newProduct.name,
+        priceKES: parseInt(newProduct.priceKES),
+        category: newProduct.category,
+        description: newProduct.description || 'No description provided',
+        shortDescription: newProduct.shortDescription || newProduct.name,
+        stock: parseInt(newProduct.stock),
+        images: newProduct.images.length > 0 ? newProduct.images : ['https://via.placeholder.com/800x800?text=Mosketh'],
+        featured: newProduct.featured || false,
+        slug: newProduct.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+      };
+
+      console.log('Sending product:', productData);
+
+      const response = await fetch(`${API_URL}/api/products`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(productData)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+
+      const result = await response.json();
+      
+      if (result.success) {
+        alert('✅ Product added successfully! It will appear on the site immediately.');
+        
+        // Reset form
+        setNewProduct({
+          name: '',
+          priceKES: '',
+          category: 'mens-perfumes',
+          description: '',
+          shortDescription: '',
+          stock: '',
+          images: [],
+          featured: false
+        });
+        setImagePreview(null);
+        
+        // Refresh products list
+        await fetchProducts();
+        
+        // Switch to products tab to see the new product
+        setActiveTab('products');
+      } else {
+        alert('❌ Failed to add product: ' + (result.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error adding product:', error);
+      alert('❌ Error adding product. Check console for details.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const getTotalRevenue = () => {
-    return orders.reduce((sum, order) => sum + order.amount, 0);
+  const handleDeleteProduct = async (productId) => {
+    if (!confirm('Are you sure you want to delete this product?')) return;
+    
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://mosketh-backend.vercel.app';
+      const response = await fetch(`${API_URL}/api/products/${productId}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        alert('✅ Product deleted successfully');
+        fetchProducts();
+      }
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      alert('❌ Error deleting product');
+    }
   };
 
-  const getProductsByCategory = (category) => {
-    return products.filter(p => p.category === category).length;
-  };
-
-  if (!isLoggedIn) {
+  // Login Page - No autofill, user must type credentials
+  if (!isAuthenticated) {
     return (
-      <div style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        padding: '20px'
-      }}>
-        <div style={{
-          backgroundColor: 'white',
-          borderRadius: '20px',
-          padding: '40px',
-          width: '100%',
-          maxWidth: '400px',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
-        }}>
-          <h1 style={{
-            textAlign: 'center',
-            color: '#333',
-            marginBottom: '30px',
-            fontSize: '28px',
-            fontWeight: '600'
-          }}>
-            Mosketh Admin
-          </h1>
+      <div className="min-h-screen bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
+          <div className="text-center mb-8">
+            <img 
+              src="/logo.png" 
+              alt="Mosketh Logo" 
+              className="w-20 h-20 mx-auto mb-4 rounded-full border-4 border-purple-100"
+            />
+            <h1 className="text-3xl font-bold text-gray-800">Admin Login</h1>
+            <p className="text-gray-600 mt-2">Enter your credentials to continue</p>
+          </div>
           
           {error && (
-            <div style={{
-              background: '#fed7d7',
-              color: '#c53030',
-              padding: '12px',
-              borderRadius: '10px',
-              marginBottom: '20px',
-              textAlign: 'center',
-              fontSize: '14px',
-              border: '1px solid #fc8181'
-            }}>
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
               {error}
             </div>
           )}
 
           <form onSubmit={handleLogin}>
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{
-                display: 'block',
-                marginBottom: '8px',
-                color: '#555',
-                fontWeight: '500',
-                fontSize: '14px'
-              }}>
-                Email Address
-              </label>
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-bold mb-2">Email Address</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  border: '2px solid #e0e0e0',
-                  borderRadius: '10px',
-                  fontSize: '16px',
-                  outline: 'none'
-                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                placeholder="moskethbeautytouch@gmail.com"
                 required
               />
             </div>
             
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{
-                display: 'block',
-                marginBottom: '8px',
-                color: '#555',
-                fontWeight: '500',
-                fontSize: '14px'
-              }}>
-                Password
-              </label>
+            <div className="mb-6">
+              <label className="block text-gray-700 text-sm font-bold mb-2">Password</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  border: '2px solid #e0e0e0',
-                  borderRadius: '10px',
-                  fontSize: '16px',
-                  outline: 'none'
-                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                placeholder="••••••••"
                 required
               />
             </div>
             
             <button
               type="submit"
-              style={{
-                width: '100%',
-                padding: '14px',
-                background: '#667eea',
-                color: 'white',
-                border: 'none',
-                borderRadius: '10px',
-                fontSize: '16px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                marginTop: '10px'
-              }}
+              className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition font-semibold"
             >
               Sign In
             </button>
@@ -221,575 +249,343 @@ export default function ManagePage() {
     );
   }
 
+  // Admin Dashboard
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: '#f0f2f5',
-      padding: '20px'
-    }}>
+    <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <div style={{
-        background: 'white',
-        borderRadius: '15px',
-        padding: '20px 30px',
-        marginBottom: '20px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-      }}>
-        <div>
-          <h1 style={{ color: '#667eea', fontSize: '28px', marginBottom: '5px' }}>Mosketh Admin</h1>
-          <p style={{ color: '#718096', fontSize: '14px' }}>Welcome back, Admin</p>
+      <div className="bg-white shadow-lg sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <img src="/logo.png" alt="Mosketh" className="w-10 h-10 rounded-full" />
+            <h1 className="text-2xl font-bold text-purple-600">Mosketh Admin</h1>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
+          >
+            <FaSignOutAlt /> Logout
+          </button>
         </div>
-        <button
-          onClick={handleLogout}
-          style={{
-            padding: '10px 25px',
-            background: '#e53e3e',
-            color: 'white',
-            border: 'none',
-            borderRadius: '10px',
-            fontSize: '14px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            transition: 'background 0.3s'
-          }}
-          onMouseEnter={(e) => e.target.style.background = '#c53030'}
-          onMouseLeave={(e) => e.target.style.background = '#e53e3e'}
-        >
-          Logout
-        </button>
       </div>
 
       {/* Navigation Tabs */}
-      <div style={{
-        background: 'white',
-        borderRadius: '15px',
-        padding: '10px',
-        marginBottom: '20px',
-        display: 'flex',
-        gap: '10px',
-        overflowX: 'auto',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-      }}>
-        {['dashboard', 'products', 'add-product', 'orders', 'customers'].map((tab) => (
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="flex space-x-4 border-b overflow-x-auto pb-1">
           <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            style={{
-              padding: '12px 25px',
-              background: activeTab === tab ? '#667eea' : 'transparent',
-              color: activeTab === tab ? 'white' : '#4a5568',
-              border: 'none',
-              borderRadius: '10px',
-              fontSize: '14px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              textTransform: 'capitalize',
-              transition: 'all 0.3s'
-            }}
+            onClick={() => setActiveTab('dashboard')}
+            className={`px-4 py-2 font-medium whitespace-nowrap flex items-center gap-2 ${activeTab === 'dashboard' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-gray-500 hover:text-gray-700'}`}
           >
-            {tab.replace('-', ' ')}
+            <FaTachometerAlt /> Dashboard
           </button>
-        ))}
+          <button
+            onClick={() => setActiveTab('add-product')}
+            className={`px-4 py-2 font-medium whitespace-nowrap flex items-center gap-2 ${activeTab === 'add-product' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-gray-500 hover:text-gray-700'}`}
+          >
+            <FaPlus /> Add Product
+          </button>
+          <button
+            onClick={() => setActiveTab('products')}
+            className={`px-4 py-2 font-medium whitespace-nowrap flex items-center gap-2 ${activeTab === 'products' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-gray-500 hover:text-gray-700'}`}
+          >
+            <FaList /> All Products
+          </button>
+        </div>
       </div>
 
-      {/* Dashboard Tab */}
-      {activeTab === 'dashboard' && (
-        <div>
-          {/* Stats Cards */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-            gap: '20px',
-            marginBottom: '30px'
-          }}>
-            <div style={{
-              background: 'white',
-              borderRadius: '15px',
-              padding: '25px',
-              boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-            }}>
-              <h3 style={{ color: '#718096', fontSize: '14px', marginBottom: '10px' }}>Total Products</h3>
-              <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#667eea' }}>{products.length}</p>
-            </div>
+      {/* Content Area */}
+      <div className="max-w-7xl mx-auto px-4 pb-12">
+        {/* Dashboard Tab */}
+        {activeTab === 'dashboard' && (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-gray-800">Dashboard Overview</h2>
             
-            <div style={{
-              background: 'white',
-              borderRadius: '15px',
-              padding: '25px',
-              boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-            }}>
-              <h3 style={{ color: '#718096', fontSize: '14px', marginBottom: '10px' }}>Total Orders</h3>
-              <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#48bb78' }}>{orders.length}</p>
-            </div>
-            
-            <div style={{
-              background: 'white',
-              borderRadius: '15px',
-              padding: '25px',
-              boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-            }}>
-              <h3 style={{ color: '#718096', fontSize: '14px', marginBottom: '10px' }}>Total Customers</h3>
-              <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#4299e1' }}>{customers.length}</p>
-            </div>
-            
-            <div style={{
-              background: 'white',
-              borderRadius: '15px',
-              padding: '25px',
-              boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-            }}>
-              <h3 style={{ color: '#718096', fontSize: '14px', marginBottom: '10px' }}>Total Revenue</h3>
-              <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#ed8936' }}>KES {getTotalRevenue().toLocaleString()}</p>
-            </div>
-          </div>
-
-          {/* Category Distribution */}
-          <div style={{
-            background: 'white',
-            borderRadius: '15px',
-            padding: '25px',
-            marginBottom: '20px',
-            boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-          }}>
-            <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>Products by Category</h2>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '15px'
-            }}>
-              <div style={{ padding: '15px', background: '#f7fafc', borderRadius: '10px' }}>
-                <p style={{ color: '#4a5568' }}>Men's Perfumes</p>
-                <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#667eea' }}>{getProductsByCategory('mens-perfumes')}</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white rounded-xl shadow-lg p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-500 text-sm">Total Products</p>
+                    <p className="text-3xl font-bold text-gray-800">{products.length}</p>
+                  </div>
+                  <FaBox className="text-purple-600 text-4xl opacity-50" />
+                </div>
               </div>
-              <div style={{ padding: '15px', background: '#f7fafc', borderRadius: '10px' }}>
-                <p style={{ color: '#4a5568' }}>Women's Perfumes</p>
-                <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#667eea' }}>{getProductsByCategory('womens-perfumes')}</p>
+              
+              <div className="bg-white rounded-xl shadow-lg p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-500 text-sm">Categories</p>
+                    <p className="text-3xl font-bold text-gray-800">7</p>
+                  </div>
+                  <FaChartBar className="text-green-600 text-4xl opacity-50" />
+                </div>
               </div>
-              <div style={{ padding: '15px', background: '#f7fafc', borderRadius: '10px' }}>
-                <p style={{ color: '#4a5568' }}>Unisex Perfumes</p>
-                <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#667eea' }}>{getProductsByCategory('unisex-perfumes')}</p>
+              
+              <div className="bg-white rounded-xl shadow-lg p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-500 text-sm">Low Stock Items</p>
+                    <p className="text-3xl font-bold text-gray-800">
+                      {products.filter(p => p.stock < 5).length}
+                    </p>
+                  </div>
+                  <FaEye className="text-orange-600 text-4xl opacity-50" />
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Recent Orders */}
-          <div style={{
-            background: 'white',
-            borderRadius: '15px',
-            padding: '25px',
-            boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-          }}>
-            <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>Recent Orders</h2>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ background: '#f7fafc' }}>
-                    <th style={{ padding: '12px', textAlign: 'left', color: '#4a5568' }}>Order ID</th>
-                    <th style={{ padding: '12px', textAlign: 'left', color: '#4a5568' }}>Customer</th>
-                    <th style={{ padding: '12px', textAlign: 'left', color: '#4a5568' }}>Amount</th>
-                    <th style={{ padding: '12px', textAlign: 'left', color: '#4a5568' }}>Status</th>
-                    <th style={{ padding: '12px', textAlign: 'left', color: '#4a5568' }}>Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders.map((order) => (
-                    <tr key={order.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                      <td style={{ padding: '12px' }}>{order.id}</td>
-                      <td style={{ padding: '12px' }}>{order.customer}</td>
-                      <td style={{ padding: '12px' }}>KES {order.amount}</td>
-                      <td style={{ padding: '12px' }}>
-                        <span style={{
-                          padding: '4px 8px',
-                          borderRadius: '5px',
-                          fontSize: '12px',
-                          background: order.status === 'completed' ? '#c6f6d5' : 
-                                     order.status === 'pending' ? '#fed7d7' : '#feebc8',
-                          color: order.status === 'completed' ? '#22543d' :
-                                 order.status === 'pending' ? '#c53030' : '#744210'
-                        }}>
-                          {order.status}
-                        </span>
-                      </td>
-                      <td style={{ padding: '12px' }}>{order.date}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Products Tab */}
-      {activeTab === 'products' && (
-        <div style={{
-          background: 'white',
-          borderRadius: '15px',
-          padding: '25px',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-        }}>
-          <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>All Products</h2>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ background: '#f7fafc' }}>
-                  <th style={{ padding: '12px', textAlign: 'left' }}>Image</th>
-                  <th style={{ padding: '12px', textAlign: 'left' }}>Name</th>
-                  <th style={{ padding: '12px', textAlign: 'left' }}>Price</th>
-                  <th style={{ padding: '12px', textAlign: 'left' }}>Category</th>
-                  <th style={{ padding: '12px', textAlign: 'left' }}>Stock</th>
-                  <th style={{ padding: '12px', textAlign: 'left' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {products.map((product) => (
-                  <tr key={product.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                    <td style={{ padding: '12px' }}>
-                      <img src={product.image} alt={product.name} style={{ width: '50px', height: '50px', borderRadius: '5px', objectFit: 'cover' }} />
-                    </td>
-                    <td style={{ padding: '12px' }}>{product.name}</td>
-                    <td style={{ padding: '12px' }}>KES {product.price}</td>
-                    <td style={{ padding: '12px' }}>{product.category.replace('-', ' ')}</td>
-                    <td style={{ padding: '12px' }}>
-                      <span style={{
-                        padding: '4px 8px',
-                        borderRadius: '5px',
-                        fontSize: '12px',
-                        background: product.stock > 5 ? '#c6f6d5' : '#fed7d7',
-                        color: product.stock > 5 ? '#22543d' : '#c53030'
-                      }}>
-                        {product.stock} units
-                      </span>
-                    </td>
-                    <td style={{ padding: '12px' }}>
-                      <button
-                        onClick={() => handleDeleteProduct(product.id)}
-                        style={{
-                          padding: '6px 12px',
-                          background: '#e53e3e',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '5px',
-                          cursor: 'pointer',
-                          marginRight: '5px'
-                        }}
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
+            {/* Category Distribution */}
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              <h3 className="text-lg font-semibold mb-4">Products by Category</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {['mens-perfumes', 'womens-perfumes', 'unisex-perfumes', 'body-oils', 'face-creams', 'hair-products', 'gift-sets'].map(cat => (
+                  <div key={cat} className="bg-gray-50 p-3 rounded-lg">
+                    <p className="text-sm text-gray-600">{cat.replace('-', ' ')}</p>
+                    <p className="text-xl font-bold text-purple-600">
+                      {products.filter(p => p.category === cat).length}
+                    </p>
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Add Product Tab */}
-      {activeTab === 'add-product' && (
-        <div style={{
-          background: 'white',
-          borderRadius: '15px',
-          padding: '25px',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-        }}>
-          <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>Add New Product</h2>
-          
-          <form onSubmit={handleAddProduct}>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-              gap: '20px',
-              marginBottom: '20px'
-            }}>
+        {/* Add Product Tab */}
+        {activeTab === 'add-product' && (
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <h2 className="text-2xl font-bold mb-6">Add New Product</h2>
+            
+            <form onSubmit={handleAddProduct} className="space-y-6">
               {/* Image Upload */}
               <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Product Image (JPEG)</label>
-                <div style={{
-                  border: '2px dashed #cbd5e0',
-                  borderRadius: '10px',
-                  padding: '20px',
-                  textAlign: 'center',
-                  background: '#f7fafc'
-                }}>
+                <label className="block text-sm font-medium mb-2">Product Image (JPEG/PNG)</label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                   {imagePreview ? (
-                    <div>
-                      <img src={imagePreview} alt="Preview" style={{ maxWidth: '100%', maxHeight: '200px', marginBottom: '10px' }} />
+                    <div className="space-y-4">
+                      <img 
+                        src={imagePreview} 
+                        alt="Preview" 
+                        className="max-w-xs mx-auto rounded-lg shadow-lg"
+                        style={{ maxHeight: '200px' }}
+                      />
                       <button
                         type="button"
                         onClick={() => {
                           setImagePreview(null);
-                          setNewProduct({...newProduct, image: null});
+                          setNewProduct({...newProduct, images: []});
                         }}
-                        style={{
-                          padding: '5px 10px',
-                          background: '#e53e3e',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '5px',
-                          cursor: 'pointer'
-                        }}
+                        className="text-red-500 hover:text-red-700 text-sm"
                       >
-                        Remove
+                        Remove Image
                       </button>
                     </div>
                   ) : (
-                    <div>
+                    <div className="space-y-2">
+                      <FaImage className="text-4xl text-gray-400 mx-auto" />
+                      <p className="text-gray-500">Click to upload or drag and drop</p>
+                      <p className="text-sm text-gray-400">JPEG or PNG, 800x800 recommended</p>
                       <input
                         type="file"
-                        accept="image/jpeg"
+                        accept="image/jpeg,image/png,image/jpg"
                         onChange={handleImageUpload}
-                        style={{ display: 'none' }}
+                        className="hidden"
                         id="image-upload"
                       />
                       <label
                         htmlFor="image-upload"
-                        style={{
-                          display: 'inline-block',
-                          padding: '10px 20px',
-                          background: '#667eea',
-                          color: 'white',
-                          borderRadius: '5px',
-                          cursor: 'pointer'
-                        }}
+                        className="inline-block bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 cursor-pointer"
                       >
-                        {isUploading ? 'Uploading...' : 'Choose Image'}
+                        {uploading ? <FaSpinner className="animate-spin" /> : <><FaUpload className="inline mr-2" /> Choose Image</>}
                       </label>
-                      <p style={{ marginTop: '10px', color: '#718096', fontSize: '12px' }}>800x800 pixels recommended</p>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Product Details */}
+              {/* Product Name */}
               <div>
-                <div style={{ marginBottom: '15px' }}>
-                  <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Product Name</label>
-                  <input
-                    type="text"
-                    value={newProduct.name}
-                    onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
-                    style={{
-                      width: '100%',
-                      padding: '10px',
-                      border: '1px solid #cbd5e0',
-                      borderRadius: '5px'
-                    }}
-                    required
-                  />
-                </div>
-                
-                <div style={{ marginBottom: '15px' }}>
-                  <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Price (KES)</label>
+                <label className="block text-sm font-medium mb-2">Product Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={newProduct.name}
+                  onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                  placeholder="e.g., Vulcan Feu by French Avenue"
+                />
+              </div>
+
+              {/* Price and Stock */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Price (KES) *</label>
                   <input
                     type="number"
-                    value={newProduct.price}
-                    onChange={(e) => setNewProduct({...newProduct, price: e.target.value})}
-                    style={{
-                      width: '100%',
-                      padding: '10px',
-                      border: '1px solid #cbd5e0',
-                      borderRadius: '5px'
-                    }}
                     required
+                    min="0"
+                    value={newProduct.priceKES}
+                    onChange={(e) => setNewProduct({...newProduct, priceKES: e.target.value})}
+                    className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                    placeholder="e.g., 4000"
                   />
                 </div>
-                
-                <div style={{ marginBottom: '15px' }}>
-                  <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Category</label>
-                  <select
-                    value={newProduct.category}
-                    onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}
-                    style={{
-                      width: '100%',
-                      padding: '10px',
-                      border: '1px solid #cbd5e0',
-                      borderRadius: '5px'
-                    }}
-                  >
-                    <option value="mens-perfumes">Men's Perfumes</option>
-                    <option value="womens-perfumes">Women's Perfumes</option>
-                    <option value="unisex-perfumes">Unisex Perfumes</option>
-                  </select>
-                </div>
-                
-                <div style={{ marginBottom: '15px' }}>
-                  <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Description</label>
-                  <textarea
-                    value={newProduct.description}
-                    onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
-                    style={{
-                      width: '100%',
-                      padding: '10px',
-                      border: '1px solid #cbd5e0',
-                      borderRadius: '5px',
-                      minHeight: '100px'
-                    }}
-                  />
-                </div>
-                
-                <div style={{ marginBottom: '15px' }}>
-                  <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Stock Quantity</label>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Stock Quantity *</label>
                   <input
                     type="number"
+                    required
+                    min="0"
                     value={newProduct.stock}
                     onChange={(e) => setNewProduct({...newProduct, stock: e.target.value})}
-                    style={{
-                      width: '100%',
-                      padding: '10px',
-                      border: '1px solid #cbd5e0',
-                      borderRadius: '5px'
-                    }}
-                    required
+                    className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                    placeholder="e.g., 10"
                   />
                 </div>
               </div>
-            </div>
 
-            <button
-              type="submit"
-              style={{
-                width: '100%',
-                padding: '15px',
-                background: '#48bb78',
-                color: 'white',
-                border: 'none',
-                borderRadius: '10px',
-                fontSize: '16px',
-                fontWeight: '600',
-                cursor: 'pointer'
-              }}
-            >
-              Add Product
-            </button>
-          </form>
-        </div>
-      )}
+              {/* Category */}
+              <div>
+                <label className="block text-sm font-medium mb-2">Category *</label>
+                <select
+                  value={newProduct.category}
+                  onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                >
+                  <option value="mens-perfumes">Men's Perfumes</option>
+                  <option value="womens-perfumes">Women's Perfumes</option>
+                  <option value="unisex-perfumes">Unisex Perfumes</option>
+                  <option value="body-oils">Body Oils</option>
+                  <option value="face-creams">Face Creams</option>
+                  <option value="hair-products">Hair Products</option>
+                  <option value="gift-sets">Gift Sets</option>
+                </select>
+              </div>
 
-      {/* Orders Tab */}
-      {activeTab === 'orders' && (
-        <div style={{
-          background: 'white',
-          borderRadius: '15px',
-          padding: '25px',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-        }}>
-          <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>All Orders</h2>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ background: '#f7fafc' }}>
-                  <th style={{ padding: '12px', textAlign: 'left' }}>Order ID</th>
-                  <th style={{ padding: '12px', textAlign: 'left' }}>Customer</th>
-                  <th style={{ padding: '12px', textAlign: 'left' }}>Amount</th>
-                  <th style={{ padding: '12px', textAlign: 'left' }}>Status</th>
-                  <th style={{ padding: '12px', textAlign: 'left' }}>Date</th>
-                  <th style={{ padding: '12px', textAlign: 'left' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map((order) => (
-                  <tr key={order.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                    <td style={{ padding: '12px' }}>{order.id}</td>
-                    <td style={{ padding: '12px' }}>{order.customer}</td>
-                    <td style={{ padding: '12px' }}>KES {order.amount}</td>
-                    <td style={{ padding: '12px' }}>
-                      <select
-                        value={order.status}
-                        onChange={(e) => {
-                          const updatedOrders = orders.map(o => 
-                            o.id === order.id ? {...o, status: e.target.value} : o
-                          );
-                          setOrders(updatedOrders);
-                        }}
-                        style={{
-                          padding: '4px 8px',
-                          borderRadius: '5px',
-                          border: '1px solid #cbd5e0'
-                        }}
-                      >
-                        <option value="pending">Pending</option>
-                        <option value="processing">Processing</option>
-                        <option value="completed">Completed</option>
-                        <option value="cancelled">Cancelled</option>
-                      </select>
-                    </td>
-                    <td style={{ padding: '12px' }}>{order.date}</td>
-                    <td style={{ padding: '12px' }}>
-                      <button
-                        onClick={() => alert(`View details for order ${order.id}`)}
-                        style={{
-                          padding: '6px 12px',
-                          background: '#4299e1',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '5px',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        View
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+              {/* Short Description */}
+              <div>
+                <label className="block text-sm font-medium mb-2">Short Description</label>
+                <input
+                  type="text"
+                  value={newProduct.shortDescription}
+                  onChange={(e) => setNewProduct({...newProduct, shortDescription: e.target.value})}
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                  placeholder="Brief description (max 100 characters)"
+                  maxLength="100"
+                />
+              </div>
+
+              {/* Full Description */}
+              <div>
+                <label className="block text-sm font-medium mb-2">Full Description *</label>
+                <textarea
+                  required
+                  rows="5"
+                  value={newProduct.description}
+                  onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                  placeholder="Detailed product description..."
+                />
+              </div>
+
+              {/* Featured Checkbox */}
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="featured"
+                  checked={newProduct.featured}
+                  onChange={(e) => setNewProduct({...newProduct, featured: e.target.checked})}
+                  className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                />
+                <label htmlFor="featured" className="ml-2 text-sm text-gray-700">
+                  Feature this product on homepage
+                </label>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {loading ? <><FaSpinner className="animate-spin" /> Adding...</> : <><FaSave /> Add Product</>}
+              </button>
+            </form>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Customers Tab */}
-      {activeTab === 'customers' && (
-        <div style={{
-          background: 'white',
-          borderRadius: '15px',
-          padding: '25px',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-        }}>
-          <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>Customers</h2>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ background: '#f7fafc' }}>
-                  <th style={{ padding: '12px', textAlign: 'left' }}>Name</th>
-                  <th style={{ padding: '12px', textAlign: 'left' }}>Email</th>
-                  <th style={{ padding: '12px', textAlign: 'left' }}>Orders</th>
-                  <th style={{ padding: '12px', textAlign: 'left' }}>Total Spent</th>
-                  <th style={{ padding: '12px', textAlign: 'left' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {customers.map((customer) => (
-                  <tr key={customer.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                    <td style={{ padding: '12px' }}>{customer.name}</td>
-                    <td style={{ padding: '12px' }}>{customer.email}</td>
-                    <td style={{ padding: '12px' }}>{customer.orders}</td>
-                    <td style={{ padding: '12px' }}>KES {customer.spent}</td>
-                    <td style={{ padding: '12px' }}>
-                      <button
-                        onClick={() => alert(`View details for ${customer.name}`)}
-                        style={{
-                          padding: '6px 12px',
-                          background: '#4299e1',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '5px',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        View
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {/* Products Tab */}
+        {activeTab === 'products' && (
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <h2 className="text-2xl font-bold mb-6">All Products</h2>
+            
+            {products.length === 0 ? (
+              <div className="text-center py-12">
+                <FaBox className="text-5xl text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500">No products added yet.</p>
+                <button
+                  onClick={() => setActiveTab('add-product')}
+                  className="mt-4 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
+                >
+                  Add Your First Product
+                </button>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Image</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stock</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Featured</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {products.map((product) => (
+                      <tr key={product.id}>
+                        <td className="px-6 py-4">
+                          <img 
+                            src={product.images?.[0] || '/logo.png'} 
+                            alt={product.name}
+                            className="w-12 h-12 object-cover rounded"
+                          />
+                        </td>
+                        <td className="px-6 py-4 font-medium">{product.name}</td>
+                        <td className="px-6 py-4">KES {product.priceKES}</td>
+                        <td className="px-6 py-4 capitalize">{product.category?.replace('-', ' ') || 'N/A'}</td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2 py-1 rounded text-sm ${
+                            product.stock > 5 ? 'bg-green-100 text-green-800' : 
+                            product.stock > 0 ? 'bg-orange-100 text-orange-800' : 
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {product.stock} units
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          {product.featured ? '⭐ Yes' : 'No'}
+                        </td>
+                        <td className="px-6 py-4">
+                          <button 
+                            onClick={() => handleDeleteProduct(product.id)}
+                            className="text-red-600 hover:text-red-800"
+                          >
+                            <FaTrash />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

@@ -1,95 +1,212 @@
-import React from 'react';
+'use client';
 
-export const dynamic = 'force-dynamic';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { FaBox, FaShoppingCart, FaUsers, FaEye, FaStar, FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
 
-export default async function AdminDashboardPage() {
-  // You can fetch admin stats here if needed
-  let stats = {
-    totalOrders: 0,
+export default function AdminDashboard() {
+  const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [stats, setStats] = useState({
     totalProducts: 0,
+    totalOrders: 0,
     totalCustomers: 0,
-    revenue: 0
+    totalRevenue: 0
+  });
+
+  // Admin credentials (hashed in production)
+  const ADMIN_EMAIL = 'moskethbeautytouch@gmail.com';
+  const ADMIN_PASSWORD = '@Sultan12&crazy207103';
+
+  useEffect(() => {
+    // Check if already authenticated
+    const auth = localStorage.getItem('adminAuth');
+    if (auth === 'true') {
+      setIsAuthenticated(true);
+      fetchStats();
+    }
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://mosketh-backend.vercel.app';
+      const res = await fetch(`${API_URL}/api/admin/stats`);
+      const data = await res.json();
+      setStats(data.data || stats);
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
   };
 
-  try {
-    // Example of fetching admin stats - adjust based on your API
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://mosketh-backend.vercel.app';
-    const res = await fetch(`${API_URL}/api/admin/stats`, {
-      cache: 'no-store'
-    });
-    if (res.ok) {
-      const data = await res.json();
-      stats = data.data || stats;
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+      setIsAuthenticated(true);
+      localStorage.setItem('adminAuth', 'true');
+      fetchStats();
+      setError('');
+    } else {
+      setError('Invalid email or password');
     }
-  } catch (error) {
-    console.error('Error fetching admin stats:', error.message);
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    localStorage.removeItem('adminAuth');
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-800">Mosketh Admin</h1>
+            <p className="text-gray-600 mt-2">Sign in to access dashboard</p>
+          </div>
+          
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleLogin}>
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-bold mb-2">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                required
+              />
+            </div>
+            
+            <div className="mb-6">
+              <label className="block text-gray-700 text-sm font-bold mb-2">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                required
+              />
+            </div>
+            
+            <button
+              type="submit"
+              className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition font-semibold"
+            >
+              Sign In
+            </button>
+          </form>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="admin-dashboard" style={{ padding: '20px' }}>
-      <h1 style={{ fontSize: '2rem', marginBottom: '20px' }}>Admin Dashboard</h1>
-      
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
-        gap: '20px',
-        marginBottom: '30px'
-      }}>
-        <div style={{ background: '#f0f9ff', padding: '20px', borderRadius: '8px' }}>
-          <h3 style={{ fontSize: '1.1rem', color: '#0369a1' }}>Total Orders</h3>
-          <p style={{ fontSize: '2rem', fontWeight: 'bold' }}>{stats.totalOrders}</p>
-        </div>
-        
-        <div style={{ background: '#f0fdf4', padding: '20px', borderRadius: '8px' }}>
-          <h3 style={{ fontSize: '1.1rem', color: '#166534' }}>Total Products</h3>
-          <p style={{ fontSize: '2rem', fontWeight: 'bold' }}>{stats.totalProducts}</p>
-        </div>
-        
-        <div style={{ background: '#fef2f2', padding: '20px', borderRadius: '8px' }}>
-          <h3 style={{ fontSize: '1.1rem', color: '#991b1b' }}>Total Customers</h3>
-          <p style={{ fontSize: '2rem', fontWeight: 'bold' }}>{stats.totalCustomers}</p>
-        </div>
-        
-        <div style={{ background: '#faf5ff', padding: '20px', borderRadius: '8px' }}>
-          <h3 style={{ fontSize: '1.1rem', color: '#6b21a8' }}>Revenue (KES)</h3>
-          <p style={{ fontSize: '2rem', fontWeight: 'bold' }}>{stats.revenue.toLocaleString()}</p>
+    <div className="min-h-screen bg-gray-100">
+      {/* Header */}
+      <div className="bg-white shadow">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-purple-600">Mosketh Admin Dashboard</h1>
+          <button
+            onClick={handleLogout}
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+          >
+            Logout
+          </button>
         </div>
       </div>
 
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
-        gap: '20px' 
-      }}>
-        <div style={{ background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-          <h2 style={{ fontSize: '1.3rem', marginBottom: '15px' }}>Quick Actions</h2>
-          <ul style={{ listStyle: 'none', padding: 0 }}>
-            <li style={{ marginBottom: '10px' }}>
-              <a href="/admin/products/new" style={{ color: '#2563eb', textDecoration: 'none' }}>
-                ➕ Add New Product
-              </a>
-            </li>
-            <li style={{ marginBottom: '10px' }}>
-              <a href="/admin/orders" style={{ color: '#2563eb', textDecoration: 'none' }}>
-                📦 View Orders
-              </a>
-            </li>
-            <li style={{ marginBottom: '10px' }}>
-              <a href="/admin/products" style={{ color: '#2563eb', textDecoration: 'none' }}>
-                📋 Manage Products
-              </a>
-            </li>
-            <li style={{ marginBottom: '10px' }}>
-              <a href="/admin/customers" style={{ color: '#2563eb', textDecoration: 'none' }}>
-                👥 Manage Customers
-              </a>
-            </li>
-          </ul>
+      {/* Stats Cards */}
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-500 text-sm">Total Products</p>
+                <p className="text-3xl font-bold text-gray-800">{stats.totalProducts}</p>
+              </div>
+              <FaBox className="text-purple-600 text-4xl" />
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-500 text-sm">Total Orders</p>
+                <p className="text-3xl font-bold text-gray-800">{stats.totalOrders}</p>
+              </div>
+              <FaShoppingCart className="text-green-600 text-4xl" />
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-500 text-sm">Total Customers</p>
+                <p className="text-3xl font-bold text-gray-800">{stats.totalCustomers}</p>
+              </div>
+              <FaUsers className="text-blue-600 text-4xl" />
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-500 text-sm">Revenue (KES)</p>
+                <p className="text-3xl font-bold text-gray-800">{stats.totalRevenue.toLocaleString()}</p>
+              </div>
+              <FaEye className="text-yellow-600 text-4xl" />
+            </div>
+          </div>
         </div>
 
-        <div style={{ background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-          <h2 style={{ fontSize: '1.3rem', marginBottom: '15px' }}>Recent Activity</h2>
-          <p style={{ color: '#666' }}>No recent activity to display</p>
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-xl font-bold mb-4">Products</h2>
+            <div className="space-y-3">
+              <button className="w-full bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition flex items-center justify-center gap-2">
+                <FaPlus /> Add New Product
+              </button>
+              <button className="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition flex items-center justify-center gap-2">
+                <FaEdit /> Edit Products
+              </button>
+              <button className="w-full bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition flex items-center justify-center gap-2">
+                <FaTrash /> Delete Products
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-xl font-bold mb-4">Orders</h2>
+            <div className="space-y-3">
+              <button className="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
+                View All Orders
+              </button>
+              <button className="w-full bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700 transition">
+                Process Orders
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-xl font-bold mb-4">Customers</h2>
+            <div className="space-y-3">
+              <button className="w-full bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition">
+                View Customers
+              </button>
+              <button className="w-full bg-pink-600 text-white px-4 py-2 rounded hover:bg-pink-700 transition">
+                Send Newsletter
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

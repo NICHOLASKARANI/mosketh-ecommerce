@@ -41,21 +41,77 @@ const defaultTestimonials = [
     comment: 'Great selection of fragrances. The M-Pesa payment was seamless and easy.',
     image: 'https://randomuser.me/api/portraits/men/3.jpg',
     date: '2024-01-05'
+  },
+  {
+    id: 4,
+    name: 'Mary Akinyi',
+    rating: 5,
+    comment: 'The body oils are incredible! My skin feels so soft and smells amazing.',
+    image: 'https://randomuser.me/api/portraits/women/4.jpg',
+    date: '2024-01-20'
+  },
+  {
+    id: 5,
+    name: 'James Kariuki',
+    rating: 5,
+    comment: 'Best place for authentic perfumes in Kenya. The customer service is top-notch!',
+    image: 'https://randomuser.me/api/portraits/men/5.jpg',
+    date: '2024-01-18'
+  },
+  {
+    id: 6,
+    name: 'Grace Nduta',
+    rating: 5,
+    comment: 'I ordered a gift set for my wife and she absolutely loved it! Will definitely order again.',
+    image: 'https://randomuser.me/api/portraits/women/6.jpg',
+    date: '2024-01-12'
+  },
+  {
+    id: 7,
+    name: 'Peter Ochieng',
+    rating: 4,
+    comment: 'Great prices and fast delivery. The face creams are amazing!',
+    image: 'https://randomuser.me/api/portraits/men/7.jpg',
+    date: '2024-01-08'
+  },
+  {
+    id: 8,
+    name: 'Lucy Wambui',
+    rating: 5,
+    comment: 'The unisex perfumes are perfect. My whole family loves them!',
+    image: 'https://randomuser.me/api/portraits/women/8.jpg',
+    date: '2024-01-03'
+  },
+  {
+    id: 9,
+    name: 'Daniel Mutua',
+    rating: 5,
+    comment: 'Excellent service and genuine products. Highly recommended!',
+    image: 'https://randomuser.me/api/portraits/men/9.jpg',
+    date: '2023-12-28'
+  },
+  {
+    id: 10,
+    name: 'Esther Njeri',
+    rating: 5,
+    comment: 'The hair products have transformed my hair. Thank you Mosketh!',
+    image: 'https://randomuser.me/api/portraits/women/10.jpg',
+    date: '2023-12-20'
   }
 ];
 
 const defaultCategories = [
   { id: 'mens', name: "Men's Perfumes", slug: 'mens-perfumes', image: '/category-men.jpg' },
   { id: 'womens', name: "Women's Perfumes", slug: 'womens-perfumes', image: '/category-women.jpg' },
-  { id: 'mists', name: 'Body Mists', slug: 'body-mists', image: '/category-mists.jpg' },
-  { id: 'gifts', name: 'Gift Sets', slug: 'gift-sets', image: '/category-gifts.jpg' }
+  { id: 'unisex', name: 'Unisex Perfumes', slug: 'unisex-perfumes', image: '/category-unisex.jpg' },
+  { id: 'body-oils', name: 'Body Oils', slug: 'body-oils', image: '/category-body-oils.jpg' },
+  { id: 'face-creams', name: 'Face Creams', slug: 'face-creams', image: '/category-face-creams.jpg' },
+  { id: 'hair-products', name: 'Hair Products', slug: 'hair-products', image: '/category-hair.jpg' }
 ];
 
 async function fetchWithFallback(url, fallback, errorMessage) {
   try {
     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://mosketh-backend.vercel.app';
-    console.log(`Fetching from: ${API_URL}${url}`);
-    
     const res = await fetch(`${API_URL}${url}`, {
       cache: 'no-store',
       headers: { 'Content-Type': 'application/json' },

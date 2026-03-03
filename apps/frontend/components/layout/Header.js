@@ -9,33 +9,44 @@ import { useWishlistStore } from '@/store/wishlistStore';
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const cartItems = useCartStore((state) => state.items);
   const wishlistItems = useWishlistStore((state) => state.items);
 
   const cartCount = cartItems?.reduce((total, item) => total + (item.quantity || 1), 0) || 0;
   const wishlistCount = wishlistItems?.length || 0;
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      window.location.href = `/products?search=${encodeURIComponent(searchQuery)}`;
+    }
+  };
+
   return (
     <header className="bg-white shadow-md sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-20">
           {/* Logo */}
-          <Link href="/" className="text-2xl font-bold text-purple-600">
-            Mosketh
+          <Link href="/" className="flex items-center space-x-2">
+            <span className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 text-transparent bg-clip-text">
+              MosKeth
+            </span>
+            <span className="text-sm text-gray-600 font-light">BEAUTY&PERFUMES</span>
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
-            <Link href="/" className="text-gray-700 hover:text-purple-600 transition">
+            <Link href="/" className="text-gray-700 hover:text-purple-600 transition font-medium">
               Home
             </Link>
-            <Link href="/products" className="text-gray-700 hover:text-purple-600 transition">
+            <Link href="/products" className="text-gray-700 hover:text-purple-600 transition font-medium">
               Products
             </Link>
-            <Link href="/about" className="text-gray-700 hover:text-purple-600 transition">
+            <Link href="/about" className="text-gray-700 hover:text-purple-600 transition font-medium">
               About
             </Link>
-            <Link href="/contact" className="text-gray-700 hover:text-purple-600 transition">
+            <Link href="/contact" className="text-gray-700 hover:text-purple-600 transition font-medium">
               Contact
             </Link>
           </nav>
@@ -70,8 +81,8 @@ export default function Header() {
               )}
             </Link>
 
-            {/* User */}
-            <Link href="/account" className="text-gray-600 hover:text-purple-600 transition">
+            {/* User/Admin */}
+            <Link href="/admin" className="text-gray-600 hover:text-purple-600 transition">
               <FaUser size={20} />
             </Link>
 
@@ -88,16 +99,18 @@ export default function Header() {
         {/* Search Bar */}
         {isSearchOpen && (
           <div className="py-4 border-t">
-            <div className="relative">
+            <form onSubmit={handleSearch} className="relative">
               <input
                 type="text"
-                placeholder="Search for perfumes..."
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search for perfumes, body oils, face creams..."
+                className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
               />
-              <button className="absolute right-2 top-2 text-purple-600">
-                <FaSearch />
+              <button type="submit" className="absolute right-3 top-3 text-purple-600">
+                <FaSearch size={20} />
               </button>
-            </div>
+            </form>
           </div>
         )}
 
@@ -105,16 +118,16 @@ export default function Header() {
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t">
             <nav className="flex flex-col space-y-4">
-              <Link href="/" className="text-gray-700 hover:text-purple-600 transition">
+              <Link href="/" className="text-gray-700 hover:text-purple-600 transition px-2 py-1">
                 Home
               </Link>
-              <Link href="/products" className="text-gray-700 hover:text-purple-600 transition">
+              <Link href="/products" className="text-gray-700 hover:text-purple-600 transition px-2 py-1">
                 Products
               </Link>
-              <Link href="/about" className="text-gray-700 hover:text-purple-600 transition">
+              <Link href="/about" className="text-gray-700 hover:text-purple-600 transition px-2 py-1">
                 About
               </Link>
-              <Link href="/contact" className="text-gray-700 hover:text-purple-600 transition">
+              <Link href="/contact" className="text-gray-700 hover:text-purple-600 transition px-2 py-1">
                 Contact
               </Link>
             </nav>

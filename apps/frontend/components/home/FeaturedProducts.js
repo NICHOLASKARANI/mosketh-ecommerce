@@ -5,7 +5,10 @@ import Link from 'next/link';
 import ProductCard from '@/components/products/ProductCard';
 
 export default function FeaturedProducts({ products }) {
-  if (!products || products.length === 0) {
+  // Ensure products is an array
+  const safeProducts = Array.isArray(products) ? products : [];
+
+  if (safeProducts.length === 0) {
     return (
       <div className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 text-center">
@@ -23,7 +26,7 @@ export default function FeaturedProducts({ products }) {
         <p className="text-gray-500 mb-8">Our most popular fragrances loved by customers</p>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {products.map((product) => (
+          {safeProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>

@@ -14,18 +14,17 @@ export default function ProductCard({ product }) {
     addItem(product);
   };
 
-  if (!product) return null;
-
+  // Safely extract values, never render objects directly
   const safeProduct = {
-    id: product.id || Math.random().toString(),
-    name: product.name || 'Unnamed Product',
-    priceKES: product.priceKES || 0,
-    slug: product.slug || '#',
-    images: product.images && product.images.length > 0 ? product.images : ['/logo.png'],
-    shortDescription: product.shortDescription || product.description?.substring(0, 100) || 'Luxury fragrance',
-    description: product.description || '',
-    stock: product.stock || 0,
-    featured: product.featured || false
+    id: product?.id || Math.random().toString(),
+    name: product?.name || 'Unnamed Product',
+    priceKES: typeof product?.priceKES === 'number' ? product.priceKES : 0,
+    slug: product?.slug || '#',
+    images: Array.isArray(product?.images) && product.images.length > 0 ? product.images : ['/logo.png'],
+    shortDescription: product?.shortDescription || product?.description?.substring(0, 100) || 'Luxury fragrance',
+    description: product?.description || '',
+    stock: typeof product?.stock === 'number' ? product.stock : 0,
+    featured: product?.featured || false
   };
 
   return (
@@ -65,10 +64,10 @@ export default function ProductCard({ product }) {
           </Link>
         </div>
 
-        {/* Stock Badge */}
-        {safeProduct.stock <= 5 && safeProduct.stock > 0 && (
+        {/* Stock Badge - render as string */}
+        {safeProduct.stock > 0 && safeProduct.stock <= 5 && (
           <div className="absolute top-4 right-4 bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
-            Only {safeProduct.stock} left
+            {`Only ${safeProduct.stock} left`}
           </div>
         )}
         
@@ -86,7 +85,7 @@ export default function ProductCard({ product }) {
         )}
       </Link>
 
-      {/* Product Info - Responsive Layout */}
+      {/* Product Info */}
       <div className="p-5 flex flex-col flex-grow">
         <Link href={`/product/${safeProduct.slug}`} className="flex-grow">
           <h3 className="text-lg font-semibold text-gray-800 hover:text-purple-600 transition-colors line-clamp-2 mb-2">
@@ -98,24 +97,12 @@ export default function ProductCard({ product }) {
           {safeProduct.shortDescription}
         </p>
         
-        {/* Description (visible on larger screens) */}
-        {safeProduct.description && (
-          <p className="text-sm text-gray-600 line-clamp-3 mb-4 hidden md:block">
-            {safeProduct.description}
-          </p>
-        )}
-        
-        {/* Price - Prominently displayed at bottom */}
+        {/* Price */}
         <div className="mt-auto">
           <div className="flex items-center justify-between mb-3">
             <span className="text-2xl font-bold text-purple-600">
-              KES {safeProduct.priceKES?.toLocaleString()}
+              {`KES ${safeProduct.priceKES.toLocaleString()}`}
             </span>
-            {safeProduct.stock > 0 && safeProduct.stock <= 5 && (
-              <span className="text-xs text-orange-500 font-medium md:hidden">
-                Only {safeProduct.stock} left
-              </span>
-            )}
           </div>
 
           {/* Add to Cart Button */}

@@ -9,19 +9,31 @@ export default function SimpleProductDisplay() {
 
   const loadProducts = () => {
     try {
-      // Try both storage keys
+      // Try both storage keys exactly like diagnostic tool does
       let products = [];
       const data1 = localStorage.getItem('mosketh_products');
       const data2 = localStorage.getItem('mosketh_products_v2');
       
+      console.log('Raw storage data:', { data1, data2 });
+      
       if (data1) {
-        try { products = JSON.parse(data1); } catch (e) {}
+        try { 
+          products = JSON.parse(data1); 
+          console.log('Parsed data1:', products);
+        } catch (e) {
+          console.error('Error parsing data1:', e);
+        }
       }
       if (data2 && products.length === 0) {
-        try { products = JSON.parse(data2); } catch (e) {}
+        try { 
+          products = JSON.parse(data2); 
+          console.log('Parsed data2:', products);
+        } catch (e) {
+          console.error('Error parsing data2:', e);
+        }
       }
       
-      console.log('Loaded products:', products.length);
+      console.log('Final products loaded:', products);
       setProducts(products);
     } catch (error) {
       console.error('Error loading products:', error);
@@ -38,7 +50,10 @@ export default function SimpleProductDisplay() {
     window.addEventListener('focus', onFocus);
     
     // Reload when storage changes
-    const onStorage = () => loadProducts();
+    const onStorage = (e) => {
+      console.log('Storage changed:', e.key);
+      loadProducts();
+    };
     window.addEventListener('storage', onStorage);
     
     return () => {
@@ -60,15 +75,17 @@ export default function SimpleProductDisplay() {
   const featuredProducts = products.filter(p => p.featured);
   const displayProducts = featuredProducts.length > 0 ? featuredProducts : products;
 
+  console.log('Rendering with products:', products.length);
+
   return (
     <div className="py-16 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4">
         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 text-center mb-4">
-          {featuredProducts.length > 0 ? 'Featured Products' : 'Our Products'}
+          {products.length > 0 ? (featuredProducts.length > 0 ? 'Featured Products' : 'Our Products') : 'Our Products'}
         </h2>
         <p className="text-gray-500 text-center mb-8">
           {products.length > 0 
-            ? 'Discover our collection of luxury fragrances'
+            ? 'Discover our collection of luxury fragrances and beauty products'
             : 'No products yet. Check back soon!'}
         </p>
 
@@ -80,14 +97,14 @@ export default function SimpleProductDisplay() {
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {displayProducts.map(product => (
-                <SimpleProductCard key={product.id} product={product} />
+                <ProductCard key={product.id} product={product} />
               ))}
             </div>
             
             <div className="text-center mt-12">
               <Link 
                 href="/products" 
-                className="inline-block bg-purple-600 text-white px-8 py-3 rounded-lg hover:bg-purple-700 transition"
+                className="inline-block bg-purple-600 text-white px-8 py-3 rounded-lg hover:bg-purple-700 transition transform hover:scale-105"
               >
                 View All Products
               </Link>
@@ -99,7 +116,7 @@ export default function SimpleProductDisplay() {
   );
 }
 
-function SimpleProductCard({ product }) {
+function ProductCard({ product }) {
   const [imageError, setImageError] = useState(false);
 
   const handleAddToCart = () => {
@@ -117,18 +134,23 @@ function SimpleProductCard({ product }) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition">
+    <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition transform hover:-translate-y-1">
       <Link href={`/product/${product.slug}`}>
-        <div className="relative pt-[100%] overflow-hidden">
+        <div className="relative pt-[100%] overflow-hidden bg-gray-100">
           <img
             src={imageError ? 'https://via.placeholder.com/400?text=Mosketh' : (product.images?.[0] || 'https://via.placeholder.com/400?text=Mosketh')}
             alt={product.name}
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover hover:scale-110 transition-transform duration-300"
             onError={() => setImageError(true)}
           />
           {product.featured && (
             <div className="absolute top-2 left-2 bg-purple-600 text-white px-2 py-1 rounded text-xs">
               Featured
+            </div>
+          )}
+          {product.stock <= 5 && product.stock > 0 && (
+            <div className="absolute top-2 right-2 bg-orange-500 text-white px-2 py-1 rounded text-xs">
+              Only {product.stock} left
             </div>
           )}
         </div>
@@ -149,9 +171,6 @@ function SimpleProductCard({ product }) {
           <span className="text-xl font-bold text-purple-600">
             KES {product.priceKES?.toLocaleString()}
           </span>
-          {product.stock <= 5 && product.stock > 0 && (
-            <span className="text-xs text-orange-600">Only {product.stock} left</span>
-          )}
         </div>
         
         <button

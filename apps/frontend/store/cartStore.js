@@ -10,21 +10,25 @@ export const useCartStore = create(
         const currentItems = get().items;
         const existingItem = currentItems.find(item => item.id === product.id);
         
+        let updatedItems;
         if (existingItem) {
-          set({
-            items: currentItems.map(item =>
-              item.id === product.id
-                ? { ...item, quantity: (item.quantity || 1) + 1 }
-                : item
-            )
-          });
+          updatedItems = currentItems.map(item =>
+            item.id === product.id
+              ? { ...item, quantity: (item.quantity || 1) + 1 }
+              : item
+          );
         } else {
-          set({ items: [...currentItems, { ...product, quantity: 1 }] });
+          updatedItems = [...currentItems, { ...product, quantity: 1 }];
         }
         
+        set({ items: updatedItems });
+        
+        // Show success message
         if (typeof window !== 'undefined') {
           alert(`${product.name} added to cart!`);
         }
+        
+        return updatedItems;
       },
       
       removeItem: (id) => {

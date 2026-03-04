@@ -14,12 +14,16 @@ export default function ProductCard({ product }) {
     name: product?.name || 'Product',
     priceKES: product?.priceKES || 0,
     slug: product?.slug || '#',
-    images: product?.images?.length ? product.images : ['https://images.unsplash.com/photo-1594035910387-fea47794261f?w=400'],
+    images: (product?.images && product.images.length > 0) ? product.images : ['https://images.unsplash.com/photo-1594035910387-fea47794261f?w=400'],
     featured: product?.featured || false,
-    stock: product?.stock || 0
+    stock: product?.stock || 0,
+    description: product?.description || ''
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     const success = cart.addItem(safeProduct);
     if (success) {
       setAdded(true);
@@ -47,7 +51,7 @@ export default function ProductCard({ product }) {
               Featured
             </div>
           )}
-          {safeProduct.stock <= 5 && safeProduct.stock > 0 && (
+          {safeProduct.stock > 0 && safeProduct.stock <= 5 && (
             <div className="absolute top-2 right-2 bg-orange-500 text-white px-2 py-1 rounded text-xs">
               Only {safeProduct.stock} left
             </div>

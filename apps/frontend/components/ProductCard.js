@@ -1,54 +1,72 @@
-'use client'
+﻿'use client';
 
-import Link from 'next/link'
-import Image from 'next/image'
-import { useCartStore } from '@/store/cartStore'
-import toast from 'react-hot-toast'
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { cart } from '@/lib/cart';
 
 export default function ProductCard({ product }) {
-  const { addItem } = useCartStore()
+  const [imageError, setImageError] = useState(false);
+  const [added, setAdded] = useState(false);
 
-  const handleAddToCart = (e) => {
-    e.preventDefault()
-    addItem({
-      id: product.id,
-      name: product.name,
-      priceKES: product.priceKES,
-      quantity: 1,
-      image: product.images?.[0] || '/images/placeholder.jpg',
-      slug: product.slug
-    })
-    toast.success('Added to cart!')
-  }
+  const handleAddToCart = () => {
+    const success = cart.addItem(product);
+    if (success) {
+      setAdded(true);
+      alert(`${product.name} added to cart!`);
+      setTimeout(() => setAdded(false), 2000);
+    }
+  };
+
+  // Ensure product has required fields
+  const safeProduct = {
+    id: product.id || Date.now().toString(),
+    name: product.name || 'Product',
+    priceKES: product.priceKES || 0,
+    images: product.images || ['https://images.unsplash.com/photo-1594035910387-fea47794261f?w=400'],
+    slug: product.slug || '#'
+  };
+
+  const imageUrl = imageError 
+    ? 'https://images.unsplash.com/photo-1594035910387-fea47794261f?w=400&h=400&fit=crop'
+    : (safeProduct.images[0] || 'https://images.unsplash.com/photo-1594035910387-fea47794261f?w=400&h=400&fit=crop');
 
   return (
-    <Link href={`/product/${product.slug}`} className="group">
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-        <div className="relative h-48 bg-gray-100">
-          <Image
-            src={product.images?.[0] || '/images/placeholder.jpg'}
-            alt={product.name}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform"
+    <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition">
+      <Link href={`/product/${safeProduct.slug}`}>
+        <div className="relative pt-[100%] overflow-hidden bg-gray-100">
+          <img
+            src={imageUrl}
+            alt={safeProduct.name}
+            className="absolute inset-0 w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+            onError={() => setImageError(true)}
           />
         </div>
-        <div className="p-4">
-          <h3 className="font-semibold mb-2 line-clamp-2">{product.name}</h3>
-          <div className="flex items-center justify-between">
-            <span className="text-lg font-bold text-primary-600">
-              KSh {product.priceKES?.toLocaleString()}
-            </span>
-            <button
-              onClick={handleAddToCart}
-              className="bg-primary-600 text-white p-2 rounded-full hover:bg-primary-700 transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-              </svg>
-            </button>
-          </div>
+      </Link>
+      
+      <div className="p-4">
+        <Link href={`/product/${safeProduct.slug}`}>
+          <h3 className="font-semibold text-gray-800 hover:text-purple-600 mb-2">
+            {safeProduct.name}
+          </h3>
+        </Link>
+        
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-xl font-bold text-purple-600">
+            KES {safeProduct.priceKES?.toLocaleString()}
+          </span>
         </div>
+        
+        <button
+          onClick={handleAddToCart}
+          className={`w-full py-2 rounded font-semibold transition-all ${
+            added 
+              ? 'bg-green-600 text-white' 
+              : 'bg-purple-600 text-white hover:bg-purple-700'
+          }`}
+        >
+          {added ? '✓ Added!' : 'Add to Cart'}
+        </button>
       </div>
-    </Link>
-  )
+    </div>
+  );
 }

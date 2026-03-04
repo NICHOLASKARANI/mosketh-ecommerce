@@ -9,31 +9,21 @@ export default function SimpleProductDisplay() {
 
   const loadProducts = () => {
     try {
-      // Try both storage keys exactly like diagnostic tool does
       let products = [];
       const data1 = localStorage.getItem('mosketh_products');
       const data2 = localStorage.getItem('mosketh_products_v2');
       
-      console.log('Raw storage data:', { data1, data2 });
-      
       if (data1) {
         try { 
           products = JSON.parse(data1); 
-          console.log('Parsed data1:', products);
-        } catch (e) {
-          console.error('Error parsing data1:', e);
-        }
+        } catch (e) {}
       }
       if (data2 && products.length === 0) {
         try { 
           products = JSON.parse(data2); 
-          console.log('Parsed data2:', products);
-        } catch (e) {
-          console.error('Error parsing data2:', e);
-        }
+        } catch (e) {}
       }
       
-      console.log('Final products loaded:', products);
       setProducts(products);
     } catch (error) {
       console.error('Error loading products:', error);
@@ -44,21 +34,11 @@ export default function SimpleProductDisplay() {
 
   useEffect(() => {
     loadProducts();
-    
-    // Reload when page gets focus
-    const onFocus = () => loadProducts();
-    window.addEventListener('focus', onFocus);
-    
-    // Reload when storage changes
-    const onStorage = (e) => {
-      console.log('Storage changed:', e.key);
-      loadProducts();
-    };
-    window.addEventListener('storage', onStorage);
-    
+    window.addEventListener('focus', loadProducts);
+    window.addEventListener('storage', loadProducts);
     return () => {
-      window.removeEventListener('focus', onFocus);
-      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('focus', loadProducts);
+      window.removeEventListener('storage', loadProducts);
     };
   }, []);
 
@@ -74,8 +54,6 @@ export default function SimpleProductDisplay() {
 
   const featuredProducts = products.filter(p => p.featured);
   const displayProducts = featuredProducts.length > 0 ? featuredProducts : products;
-
-  console.log('Rendering with products:', products.length);
 
   return (
     <div className="py-16 bg-gray-50">
@@ -133,12 +111,17 @@ function ProductCard({ product }) {
     alert(`${product.name} added to cart!`);
   };
 
+  // Use reliable placeholder service
+  const imageUrl = imageError 
+    ? 'https://images.unsplash.com/photo-1594035910387-fea47794261f?w=400&h=400&fit=crop'
+    : (product.images?.[0] || 'https://images.unsplash.com/photo-1594035910387-fea47794261f?w=400&h=400&fit=crop');
+
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition transform hover:-translate-y-1">
       <Link href={`/product/${product.slug}`}>
         <div className="relative pt-[100%] overflow-hidden bg-gray-100">
           <img
-            src={imageError ? 'https://via.placeholder.com/400?text=Mosketh' : (product.images?.[0] || 'https://via.placeholder.com/400?text=Mosketh')}
+            src={imageUrl}
             alt={product.name}
             className="absolute inset-0 w-full h-full object-cover hover:scale-110 transition-transform duration-300"
             onError={() => setImageError(true)}

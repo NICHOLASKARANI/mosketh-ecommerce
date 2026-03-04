@@ -1,4 +1,4 @@
-﻿// Universal cart utility - works exactly like our test page
+﻿// Universal cart utility
 export const cart = {
   // Get cart items
   getItems: () => {
@@ -14,20 +14,22 @@ export const cart = {
   addItem: (product) => {
     try {
       const items = cart.getItems();
-      const newItem = {
-        id: product.id || Date.now(),
-        name: product.name || 'Product',
-        price: product.priceKES || 0,
-        quantity: 1,
-        image: product.images?.[0] || ''
-      };
+      const existingItem = items.find(item => item.id === product.id);
       
-      items.push(newItem);
+      if (existingItem) {
+        existingItem.quantity = (existingItem.quantity || 1) + 1;
+      } else {
+        items.push({
+          id: product.id || Date.now(),
+          name: product.name || 'Product',
+          price: product.priceKES || 0,
+          quantity: 1,
+          image: product.images?.[0] || ''
+        });
+      }
+      
       localStorage.setItem('mosketh_cart', JSON.stringify(items));
-      
-      // Dispatch event for other tabs/windows
       window.dispatchEvent(new Event('cartUpdated'));
-      
       return true;
     } catch (error) {
       console.error('Error adding to cart:', error);
@@ -51,11 +53,11 @@ export const cart = {
 
   // Get total items
   getTotalItems: () => {
-    return cart.getItems().length;
+    return cart.getItems().reduce((sum, item) => sum + (item.quantity || 1), 0);
   },
 
   // Get total price
   getTotalPrice: () => {
-    return cart.getItems().reduce((sum, item) => sum + (item.price || 0), 0);
+    return cart.getItems().reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 1)), 0);
   }
 };

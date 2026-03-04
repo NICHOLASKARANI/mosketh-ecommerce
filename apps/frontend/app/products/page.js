@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import Link from 'next/link';
+import { productUtils } from '@/lib/productUtils';
 import { FaSearch } from 'react-icons/fa';
 
 export default function ProductsPage() {
@@ -26,21 +27,22 @@ export default function ProductsPage() {
   ];
 
   useEffect(() => {
-    // Load products from localStorage
-    const saved = localStorage.getItem('mosketh_products');
-    const allProducts = saved ? JSON.parse(saved) : [];
-    setProducts(allProducts);
-    setFilteredProducts(allProducts);
-    setLoading(false);
+    loadProducts();
   }, []);
 
   useEffect(() => {
-    let filtered = [...products];
+    filterAndSortProducts();
+  }, [products, searchTerm, selectedCategory, sortBy]);
 
-    // Apply category filter
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(p => p.category === selectedCategory);
-    }
+  const loadProducts = () => {
+    const allProducts = productUtils.getAllProducts();
+    setProducts(allProducts);
+    setFilteredProducts(allProducts);
+    setLoading(false);
+  };
+
+  const filterAndSortProducts = () => {
+    let filtered = [...products];
 
     // Apply search
     if (searchTerm) {
@@ -48,6 +50,11 @@ export default function ProductsPage() {
         p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.description?.toLowerCase().includes(searchTerm.toLowerCase())
       );
+    }
+
+    // Apply category filter
+    if (selectedCategory !== 'all') {
+      filtered = filtered.filter(p => p.category === selectedCategory);
     }
 
     // Apply sorting
@@ -64,10 +71,17 @@ export default function ProductsPage() {
       case 'newest':
         filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         break;
+      default:
+        // Default: featured first, then newest
+        filtered.sort((a, b) => {
+          if (a.featured && !b.featured) return -1;
+          if (!a.featured && b.featured) return 1;
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        });
     }
 
     setFilteredProducts(filtered);
-  }, [searchTerm, selectedCategory, sortBy, products]);
+  };
 
   const handleAddToCart = (product) => {
     const cart = JSON.parse(localStorage.getItem('cart') || '[]');
@@ -142,7 +156,7 @@ export default function ProductsPage() {
               onChange={(e) => setSortBy(e.target.value)}
               className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
             >
-              <option value="default">Sort by: Featured</option>
+              <option value="default">Sort: Featured</option>
               <option value="newest">Newest First</option>
               <option value="price-low">Price: Low to High</option>
               <option value="price-high">Price: High to Low</option>
@@ -193,6 +207,7 @@ export default function ProductsPage() {
 // Product Card Component
 function ProductCard({ product, onAddToCart }) {
   const [isHovered, setIsHovered] = React.useState(false);
+  const [imageError, setImageError] = React.useState(false);
 
   return (
     <div 
@@ -202,9 +217,10 @@ function ProductCard({ product, onAddToCart }) {
     >
       <Link href={`/product/${product.slug}`} className="block relative pt-[100%] overflow-hidden">
         <img
-          src={product.images?.[0] || 'https://via.placeholder.com/400?text=Mosketh'}
+          src={imageError ? 'https://via.placeholder.com/400?text=Mosketh' : (product.images?.[0] || 'https://via.placeholder.com/400?text=Mosketh')}
           alt={product.name}
           className={`absolute inset-0 w-full h-full object-cover transition-transform duration-700 ${isHovered ? 'scale-110' : 'scale-100'}`}
+          onError={() => setImageError(true)}
         />
         
         {/* Badges */}
@@ -225,6 +241,24 @@ function ProductCard({ product, onAddToCart }) {
             Featured
           </div>
         )}
+
+        {/* Quick Add Button */}
+        <div className={`absolute inset-x-4 bottom-4 transition-all duration-300 ${isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              onAddToCart(product);
+            }}
+            disabled={product.stock === 0}
+            className={`w-full py-3 rounded-lg font-semibold transition-all ${
+              product.stock > 0
+                ? 'bg-purple-600 text-white hover:bg-purple-700'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
+          >
+            {product.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
+          </button>
+        </div>
       </Link>
 
       <div className="p-5">
@@ -238,28 +272,11 @@ function ProductCard({ product, onAddToCart }) {
           {product.shortDescription || product.description?.substring(0, 100) || 'Luxury fragrance'}
         </p>
         
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between">
           <span className="text-2xl font-bold text-purple-600">
             KES {product.priceKES?.toLocaleString()}
           </span>
-          {product.discount > 0 && (
-            <span className="text-sm text-gray-400 line-through">
-              KES {((product.priceKES * (100 + product.discount)) / 100).toLocaleString()}
-            </span>
-          )}
         </div>
-
-        <button
-          onClick={() => onAddToCart(product)}
-          disabled={product.stock === 0}
-          className={`w-full py-3 rounded-lg font-semibold transition-all ${
-            product.stock > 0
-              ? 'bg-purple-600 text-white hover:bg-purple-700'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-          }`}
-        >
-          {product.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
-        </button>
       </div>
     </div>
   );

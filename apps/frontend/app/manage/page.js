@@ -2,12 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { productUtils } from '@/lib/productUtils';
 import { 
-  FaBox, FaShoppingCart, FaUsers, FaEye, 
-  FaPlus, FaTrash, FaUpload, FaImage, 
+  FaBox, FaPlus, FaTrash, FaUpload, FaImage, 
   FaTachometerAlt, FaSignOutAlt, FaSave, FaSpinner,
-  FaList, FaCheck, FaExclamationTriangle,
-  FaMoneyBillWave
+  FaList, FaCheck, FaExclamationTriangle, FaStar
 } from 'react-icons/fa';
 
 export default function ManagePage() {
@@ -38,25 +37,29 @@ export default function ManagePage() {
   const ADMIN_EMAIL = 'moskethbeautytouch@gmail.com';
   const ADMIN_PASSWORD = '@Sultan12&crazy207103';
 
-  // Load products from localStorage on mount
+  // Categories
+  const categories = [
+    { id: 'mens-perfumes', name: "Men's Perfumes" },
+    { id: 'womens-perfumes', name: "Women's Perfumes" },
+    { id: 'unisex-perfumes', name: "Unisex Perfumes" },
+    { id: 'body-oils', name: "Body Oils" },
+    { id: 'face-creams', name: "Face Creams" },
+    { id: 'hair-products', name: "Hair Products" },
+    { id: 'gift-sets', name: "Gift Sets" }
+  ];
+
   useEffect(() => {
-    const savedProducts = localStorage.getItem('mosketh_products');
-    if (savedProducts) {
-      setProducts(JSON.parse(savedProducts));
-    }
-    
     const auth = localStorage.getItem('adminAuth');
     if (auth === 'true') {
       setIsAuthenticated(true);
+      loadProducts();
     }
   }, []);
 
-  // Save products to localStorage whenever they change
-  useEffect(() => {
-    if (products.length > 0) {
-      localStorage.setItem('mosketh_products', JSON.stringify(products));
-    }
-  }, [products]);
+  const loadProducts = () => {
+    const allProducts = productUtils.getAllProducts();
+    setProducts(allProducts);
+  };
 
   const showNotification = (message, type = 'success') => {
     setNotification({ show: true, message, type });
@@ -68,6 +71,7 @@ export default function ManagePage() {
     if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
       setIsAuthenticated(true);
       localStorage.setItem('adminAuth', 'true');
+      loadProducts();
       setError('');
     } else {
       setError('Invalid email or password');
@@ -115,9 +119,7 @@ export default function ManagePage() {
         return;
       }
 
-      // Create new product object
-      const productToAdd = {
-        id: Date.now().toString(),
+      const productData = {
         name: String(newProduct.name),
         priceKES: Number(newProduct.priceKES),
         category: String(newProduct.category),
@@ -128,16 +130,11 @@ export default function ManagePage() {
           ? newProduct.images 
           : ['https://via.placeholder.com/800x800?text=Mosketh'],
         featured: Boolean(newProduct.featured),
-        slug: String(newProduct.name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
-        createdAt: new Date().toISOString()
+        slug: String(newProduct.name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
       };
 
-      // Add to products array
-      const updatedProducts = [...products, productToAdd];
-      setProducts(updatedProducts);
-      
-      // Save to localStorage
-      localStorage.setItem('mosketh_products', JSON.stringify(updatedProducts));
+      // Save using utility
+      productUtils.addProduct(productData);
       
       showNotification('Product added successfully!', 'success');
       
@@ -154,6 +151,9 @@ export default function ManagePage() {
       });
       setImagePreview(null);
       
+      // Reload products
+      loadProducts();
+      
       // Switch to products tab
       setActiveTab('products');
       
@@ -165,21 +165,12 @@ export default function ManagePage() {
     }
   };
 
-  const handleDeleteProduct = (productId) => {
+  const handleDeleteProduct = (id) => {
     if (!confirm('Are you sure you want to delete this product?')) return;
     
-    const updatedProducts = products.filter(p => p.id !== productId);
-    setProducts(updatedProducts);
-    localStorage.setItem('mosketh_products', JSON.stringify(updatedProducts));
+    productUtils.deleteProduct(id);
+    loadProducts();
     showNotification('Product deleted successfully', 'success');
-  };
-
-  // Calculate stats
-  const stats = {
-    totalProducts: products.length,
-    totalValue: products.reduce((sum, p) => sum + (Number(p.priceKES) * Number(p.stock)), 0),
-    lowStock: products.filter(p => p.stock > 0 && p.stock < 5).length,
-    outOfStock: products.filter(p => p.stock === 0).length
   };
 
   // Login Page
@@ -235,6 +226,11 @@ export default function ManagePage() {
     );
   }
 
+  // Stats
+  const totalProducts = products.length;
+  const featuredCount = products.filter(p => p.featured).length;
+  const lowStock = products.filter(p => p.stock > 0 && p.stock < 5).length;
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Notification */}
@@ -260,7 +256,7 @@ export default function ManagePage() {
         </div>
       </div>
 
-      {/* Navigation Tabs */}
+      {/* Navigation */}
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="flex space-x-4 border-b overflow-x-auto pb-1">
           <button
@@ -292,34 +288,31 @@ export default function ManagePage() {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 pb-12">
+        {/* Dashboard */}
         {activeTab === 'dashboard' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white rounded-xl shadow-lg p-6">
               <FaBox className="text-purple-600 text-3xl mb-2" />
-              <p className="text-2xl font-bold">{stats.totalProducts}</p>
+              <p className="text-3xl font-bold">{totalProducts}</p>
               <p className="text-gray-500">Total Products</p>
             </div>
             <div className="bg-white rounded-xl shadow-lg p-6">
-              <FaMoneyBillWave className="text-green-600 text-3xl mb-2" />
-              <p className="text-2xl font-bold">KES {stats.totalValue.toLocaleString()}</p>
-              <p className="text-gray-500">Inventory Value</p>
+              <FaStar className="text-yellow-500 text-3xl mb-2" />
+              <p className="text-3xl font-bold">{featuredCount}</p>
+              <p className="text-gray-500">Featured Products</p>
             </div>
             <div className="bg-white rounded-xl shadow-lg p-6">
-              <FaEye className="text-orange-600 text-3xl mb-2" />
-              <p className="text-2xl font-bold">{stats.lowStock}</p>
-              <p className="text-gray-500">Low Stock Items</p>
-            </div>
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <FaExclamationTriangle className="text-red-600 text-3xl mb-2" />
-              <p className="text-2xl font-bold">{stats.outOfStock}</p>
-              <p className="text-gray-500">Out of Stock</p>
+              <FaExclamationTriangle className="text-orange-500 text-3xl mb-2" />
+              <p className="text-3xl font-bold">{lowStock}</p>
+              <p className="text-gray-500">Low Stock</p>
             </div>
           </div>
         )}
 
+        {/* Products List */}
         {activeTab === 'products' && (
           <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-2xl font-bold mb-4">Products ({products.length})</h2>
+            <h2 className="text-2xl font-bold mb-4">All Products ({products.length})</h2>
             {products.length === 0 ? (
               <p className="text-gray-500 text-center py-8">No products yet. Add your first product!</p>
             ) : (
@@ -344,7 +337,7 @@ export default function ManagePage() {
                         </td>
                         <td className="px-4 py-2">{p.name}</td>
                         <td className="px-4 py-2">KES {p.priceKES}</td>
-                        <td className="px-4 py-2">{p.category.replace('-', ' ')}</td>
+                        <td className="px-4 py-2 capitalize">{p.category.replace('-', ' ')}</td>
                         <td className="px-4 py-2">{p.stock}</td>
                         <td className="px-4 py-2">{p.featured ? 'Yes' : 'No'}</td>
                         <td className="px-4 py-2">
@@ -361,6 +354,7 @@ export default function ManagePage() {
           </div>
         )}
 
+        {/* Add Product Form */}
         {activeTab === 'add' && (
           <div className="bg-white rounded-xl shadow-lg p-6">
             <h2 className="text-2xl font-bold mb-6">Add New Product</h2>
@@ -418,9 +412,9 @@ export default function ManagePage() {
                 onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}
                 className="w-full p-2 border rounded"
               >
-                <option value="mens-perfumes">Men's Perfumes</option>
-                <option value="womens-perfumes">Women's Perfumes</option>
-                <option value="unisex-perfumes">Unisex Perfumes</option>
+                {categories.map(cat => (
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                ))}
               </select>
 
               <input

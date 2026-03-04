@@ -4,7 +4,7 @@ import Footer from '@/components/layout/Footer';
 import HeroSection from '@/components/home/HeroSection';
 import BenefitsSection from '@/components/home/BenefitsSection';
 import NewsletterSection from '@/components/home/NewsletterSection';
-import SimpleProductDisplay from '@/components/SimpleProductDisplay';
+import ProductDisplay from '@/components/ProductDisplay';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,7 +15,7 @@ export default function HomePage() {
       <main>
         <HeroSection />
         <BenefitsSection />
-        <SimpleProductDisplay />
+        <ProductDisplay />
         <NewsletterSection />
       </main>
       <Footer />

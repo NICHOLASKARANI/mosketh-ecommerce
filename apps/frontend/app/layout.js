@@ -3,7 +3,7 @@ import './globals.css'
 import { Toaster } from 'react-hot-toast'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
-import '@/lib/seed' // This will seed the database
+import SeedProvider from '@/components/SeedProvider'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -16,7 +16,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={inter.className}>
-        {children}
+        <SeedProvider>
+          {children}
+        </SeedProvider>
         <Toaster position="bottom-right" />
         <Analytics />
         <SpeedInsights />

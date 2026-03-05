@@ -9,18 +9,23 @@ export default function ProductDisplay() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Load products
-    setProducts(productDB.getAll());
-    setLoading(false);
-
-    // Listen for updates from admin panel
+    loadProducts();
+    
     const handleUpdate = () => {
-      setProducts(productDB.getAll());
+      console.log('Products updated, reloading...');
+      loadProducts();
     };
     
     window.addEventListener('productsUpdated', handleUpdate);
     return () => window.removeEventListener('productsUpdated', handleUpdate);
   }, []);
+
+  const loadProducts = () => {
+    const allProducts = productDB.getAll();
+    console.log('Loaded', allProducts.length, 'products');
+    setProducts(allProducts);
+    setLoading(false);
+  };
 
   if (loading) {
     return (
@@ -32,8 +37,8 @@ export default function ProductDisplay() {
     );
   }
 
-  const featuredProducts = products.filter(p => p.featured);
-  const displayProducts = featuredProducts.length > 0 ? featuredProducts : products.slice(0, 3);
+  // Show first 6 products on homepage
+  const displayProducts = products.slice(0, 6);
 
   return (
     <div className="py-16 bg-gray-50">
@@ -42,21 +47,23 @@ export default function ProductDisplay() {
         
         {products.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-500 mb-4">No products yet.</p>
+            <p className="text-gray-500">No products available.</p>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {displayProducts.map(product => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
             
-            <div className="text-center mt-8">
-              <Link href="/products" className="text-purple-600 hover:text-purple-700">
-                View All Products →
-              </Link>
-            </div>
+            {products.length > 6 && (
+              <div className="text-center mt-8">
+                <Link href="/products" className="text-purple-600 hover:text-purple-700 font-semibold">
+                  View All Products ({products.length}) →
+                </Link>
+              </div>
+            )}
           </>
         )}
       </div>
@@ -72,7 +79,7 @@ function ProductCard({ product }) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+    <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition transform hover:-translate-y-1">
       <img 
         src={imageError ? 'https://images.unsplash.com/photo-1594035910387-fea47794261f?w=400' : product.images[0]} 
         alt={product.name}

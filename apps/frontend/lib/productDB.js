@@ -1,5 +1,7 @@
-﻿// Universal product storage that syncs across all devices
-const STORAGE_KEY = 'mosketh_products_v2';
+﻿// Universal product storage with version control
+const STORAGE_KEY = 'mosketh_products_v3';
+const VERSION_KEY = 'mosketh_products_version';
+const CURRENT_VERSION = '2026-03-06-v1'; // Change this date to force refresh
 
 // Default products that EVERYONE sees
 export const DEFAULT_PRODUCTS = [
@@ -138,11 +140,24 @@ export const DEFAULT_PRODUCTS = [
 ];
 
 export const productDB = {
-  // Get all products (combines defaults with admin additions)
+  // Get all products (forces refresh if version changed)
   getAll: () => {
     try {
+      // Check if we need to refresh
+      const storedVersion = localStorage.getItem(VERSION_KEY);
+      
+      if (storedVersion !== CURRENT_VERSION) {
+        // Clear old data and force refresh
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
+        console.log('🔄 Product database refreshed to version', CURRENT_VERSION);
+        return DEFAULT_PRODUCTS;
+      }
+      
+      // Get admin-modified products
       const adminProducts = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-      // Merge default products with admin products (admin takes precedence)
+      
+      // Merge default with admin products (admin takes precedence)
       const allProducts = [...DEFAULT_PRODUCTS];
       
       adminProducts.forEach(adminProduct => {
@@ -161,22 +176,33 @@ export const productDB = {
     }
   },
 
-  // Add product (admin only)
+  // Add or update product
   add: (product) => {
     try {
       const adminProducts = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
       const newProduct = {
         ...product,
         id: product.id || Date.now().toString(),
-        createdAt: new Date().toISOString()
+        updatedAt: new Date().toISOString()
       };
-      adminProducts.push(newProduct);
+      
+      // Check if product exists
+      const index = adminProducts.findIndex(p => p.id === newProduct.id);
+      if (index >= 0) {
+        adminProducts[index] = newProduct; // Update
+      } else {
+        adminProducts.push(newProduct); // Add
+      }
+      
       localStorage.setItem(STORAGE_KEY, JSON.stringify(adminProducts));
       
       // Trigger update event
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new Event('productsUpdated'));
+        // Also trigger storage event for cross-tab sync
+        window.dispatchEvent(new StorageEvent('storage', { key: STORAGE_KEY }));
       }
+      
       return newProduct;
     } catch (error) {
       console.error('Error adding product:', error);
@@ -184,13 +210,16 @@ export const productDB = {
     }
   },
 
-  // Delete product (admin only)
+  // Delete product
   delete: (id) => {
     try {
       const adminProducts = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
       const filtered = adminProducts.filter(p => p.id !== id);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+      
       window.dispatchEvent(new Event('productsUpdated'));
+      window.dispatchEvent(new StorageEvent('storage', { key: STORAGE_KEY }));
+      
       return true;
     } catch (error) {
       console.error('Error deleting product:', error);
@@ -198,9 +227,9 @@ export const productDB = {
     }
   },
 
-  // Clear all admin products
-  clearAdminProducts: () => {
-    localStorage.removeItem(STORAGE_KEY);
+  // Force refresh for all users (call this after updates)
+  forceRefresh: () => {
+    localStorage.setItem(VERSION_KEY, 'old-version'); // This will trigger refresh
     window.dispatchEvent(new Event('productsUpdated'));
   }
 };

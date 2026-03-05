@@ -2,86 +2,80 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { cart } from '@/lib/cart';
+import { cartDB } from '@/lib/cartDB';
 
 export default function ProductCard({ product }) {
   const [imageError, setImageError] = useState(false);
   const [added, setAdded] = useState(false);
+  const [adding, setAdding] = useState(false);
 
-  // Ensure product has all required fields with defaults
-  const safeProduct = {
-    id: product?.id || 'temp-' + Date.now(),
-    name: product?.name || 'Product',
-    priceKES: product?.priceKES || 0,
-    slug: product?.slug || '#',
-    images: (product?.images && product.images.length > 0) ? product.images : ['https://images.unsplash.com/photo-1594035910387-fea47794261f?w=400'],
-    featured: product?.featured || false,
-    stock: product?.stock || 0,
-    description: product?.description || ''
-  };
-
-  const handleAddToCart = (e) => {
+  const handleAddToCart = async (e) => {
     e.preventDefault();
     e.stopPropagation();
     
-    const success = cart.addItem(safeProduct);
-    if (success) {
+    setAdding(true);
+    
+    const result = cartDB.addItem(product);
+    
+    if (result.success) {
       setAdded(true);
-      alert(`${safeProduct.name} added to cart!`);
+      // Show success message
+      alert(`✅ ${product.name} added to cart!`);
       setTimeout(() => setAdded(false), 2000);
+    } else {
+      alert('❌ Failed to add to cart. Please try again.');
     }
+    
+    setAdding(false);
   };
-
-  const imageUrl = imageError 
-    ? 'https://images.unsplash.com/photo-1594035910387-fea47794261f?w=400&h=400&fit=crop'
-    : safeProduct.images[0];
 
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition transform hover:-translate-y-1">
-      <Link href={`/product/${safeProduct.slug}`}>
+      <Link href={`/product/${product.slug}`}>
         <div className="relative pt-[100%] overflow-hidden bg-gray-100">
           <img
-            src={imageUrl}
-            alt={safeProduct.name}
+            src={imageError ? 'https://images.unsplash.com/photo-1594035910387-fea47794261f?w=400' : product.images[0]}
+            alt={product.name}
             className="absolute inset-0 w-full h-full object-cover hover:scale-110 transition-transform duration-300"
             onError={() => setImageError(true)}
           />
-          {safeProduct.featured && (
-            <div className="absolute top-2 left-2 bg-purple-600 text-white px-2 py-1 rounded text-xs">
-              Featured
-            </div>
-          )}
-          {safeProduct.stock > 0 && safeProduct.stock <= 5 && (
-            <div className="absolute top-2 right-2 bg-orange-500 text-white px-2 py-1 rounded text-xs">
-              Only {safeProduct.stock} left
-            </div>
-          )}
         </div>
       </Link>
       
       <div className="p-4">
-        <Link href={`/product/${safeProduct.slug}`}>
-          <h3 className="font-semibold text-gray-800 hover:text-purple-600 mb-2">
-            {safeProduct.name}
-          </h3>
+        <Link href={`/product/${product.slug}`}>
+          <h3 className="font-semibold text-gray-800 hover:text-purple-600 mb-2">{product.name}</h3>
         </Link>
         
+        <p className="text-sm text-gray-500 mb-3 line-clamp-2">{product.shortDescription}</p>
+        
         <div className="flex items-center justify-between mb-3">
-          <span className="text-xl font-bold text-purple-600">
-            KES {safeProduct.priceKES.toLocaleString()}
-          </span>
+          <span className="text-xl font-bold text-purple-600">KES {product.priceKES}</span>
+          {product.stock <= 5 && product.stock > 0 && (
+            <span className="text-xs text-orange-600">Only {product.stock} left</span>
+          )}
         </div>
         
         <button
           onClick={handleAddToCart}
-          disabled={safeProduct.stock === 0}
-          className={`w-full py-2 rounded font-semibold transition-all ${
-            safeProduct.stock > 0
-              ? 'bg-purple-600 text-white hover:bg-purple-700'
+          disabled={adding || product.stock === 0}
+          className={`w-full py-2 rounded font-semibold transition-all flex items-center justify-center gap-2 ${
+            product.stock > 0
+              ? added 
+                ? 'bg-green-600 text-white hover:bg-green-700'
+                : 'bg-purple-600 text-white hover:bg-purple-700'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}
         >
-          {safeProduct.stock > 0 ? (added ? '✓ Added!' : 'Add to Cart') : 'Out of Stock'}
+          {adding ? (
+            <span>Adding...</span>
+          ) : added ? (
+            <>✓ Added to Cart</>
+          ) : product.stock > 0 ? (
+            <>Add to Cart</>
+          ) : (
+            <>Out of Stock</>
+          )}
         </button>
       </div>
     </div>

@@ -4,13 +4,13 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import { cart } from '@/lib/cart';
-import { FaTrash, FaPlus, FaMinus, FaShoppingBag, FaArrowRight } from 'react-icons/fa';
+import { cartDB } from '@/lib/cartDB';
+import { FaTrash, FaPlus, FaMinus, FaShoppingBag } from 'react-icons/fa';
 
 export default function CartPage() {
-  const [items, setItems] = useState([]);
-  const [total, setTotal] = useState(0);
+  const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
     loadCart();
@@ -22,31 +22,25 @@ export default function CartPage() {
   }, []);
 
   const loadCart = () => {
-    const cartItems = cart.getItems();
-    setItems(cartItems);
-    setTotal(cart.getTotalPrice());
+    const items = cartDB.getCart();
+    setCart(items);
+    setTotal(cartDB.getTotalPrice());
     setLoading(false);
   };
 
   const handleRemove = (id) => {
-    cart.removeItem(id);
-    loadCart();
+    if (confirm('Remove this item from cart?')) {
+      cartDB.removeItem(id);
+    }
   };
 
   const handleUpdateQuantity = (id, newQuantity) => {
-    if (newQuantity < 1) return;
-    // Update quantity logic here
-    const updatedItems = items.map(item => 
-      item.id === id ? { ...item, quantity: newQuantity } : item
-    );
-    localStorage.setItem('mosketh_cart', JSON.stringify(updatedItems));
-    loadCart();
+    cartDB.updateQuantity(id, newQuantity);
   };
 
   const handleClearCart = () => {
-    if (confirm('Clear your cart?')) {
-      cart.clearCart();
-      loadCart();
+    if (confirm('Clear your entire cart?')) {
+      cartDB.clearCart();
     }
   };
 
@@ -62,7 +56,7 @@ export default function CartPage() {
     );
   }
 
-  if (items.length === 0) {
+  if (cart.length === 0) {
     return (
       <>
         <Header />
@@ -70,10 +64,10 @@ export default function CartPage() {
           <div className="bg-white rounded-2xl shadow-lg p-12 text-center max-w-lg">
             <FaShoppingBag className="text-6xl text-gray-300 mx-auto mb-4" />
             <h1 className="text-3xl font-bold text-gray-800 mb-4">Your Cart is Empty</h1>
-            <p className="text-gray-600 mb-8">Looks like you haven't added any items to your cart yet.</p>
+            <p className="text-gray-600 mb-8">Start shopping to add items to your cart!</p>
             <Link 
               href="/" 
-              className="inline-block bg-purple-600 text-white px-8 py-3 rounded-lg hover:bg-purple-700 transition transform hover:scale-105"
+              className="inline-block bg-purple-600 text-white px-8 py-3 rounded-lg hover:bg-purple-700 transition"
             >
               Continue Shopping
             </Link>
@@ -89,8 +83,8 @@ export default function CartPage() {
       <Header />
       <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Your Shopping Cart</h1>
-          <p className="text-xl opacity-90">Review your items before checkout</p>
+          <h1 className="text-4xl font-bold mb-4">Your Shopping Cart</h1>
+          <p className="text-xl opacity-90">{cart.length} item{cart.length !== 1 ? 's' : ''}</p>
         </div>
       </div>
 
@@ -98,7 +92,7 @@ export default function CartPage() {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-4">
-            {items.map((item) => (
+            {cart.map((item) => (
               <div key={item.id} className="bg-white rounded-xl shadow-lg p-6 flex gap-4 hover:shadow-xl transition">
                 <img 
                   src={item.image || 'https://images.unsplash.com/photo-1594035910387-fea47794261f?w=100'} 
@@ -107,13 +101,14 @@ export default function CartPage() {
                 />
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold text-gray-800">{item.name}</h3>
-                  <p className="text-purple-600 font-bold text-xl mt-1">KES {item.price?.toLocaleString()}</p>
+                  <p className="text-purple-600 font-bold text-xl mt-1">KES {item.price}</p>
                   
                   <div className="flex items-center gap-4 mt-4">
                     <div className="flex items-center border rounded-lg">
                       <button 
                         onClick={() => handleUpdateQuantity(item.id, (item.quantity || 1) - 1)}
                         className="p-2 hover:bg-gray-100 transition"
+                        disabled={item.quantity <= 1}
                       >
                         <FaMinus size={12} />
                       </button>
@@ -135,7 +130,7 @@ export default function CartPage() {
                 </div>
                 <div className="text-right">
                   <p className="text-lg font-bold text-gray-800">
-                    KES {((item.price || 0) * (item.quantity || 1)).toLocaleString()}
+                    KES {(item.price * (item.quantity || 1)).toLocaleString()}
                   </p>
                 </div>
               </div>
@@ -149,7 +144,7 @@ export default function CartPage() {
                 Clear Cart
               </button>
               <p className="text-gray-600">
-                {items.length} item{items.length !== 1 ? 's' : ''} in cart
+                {cart.reduce((sum, item) => sum + (item.quantity || 1), 0)} total items
               </p>
             </div>
           </div>
@@ -160,10 +155,10 @@ export default function CartPage() {
               <h2 className="text-2xl font-bold mb-6">Order Summary</h2>
               
               <div className="space-y-4 mb-6">
-                {items.map(item => (
+                {cart.map(item => (
                   <div key={item.id} className="flex justify-between text-sm">
                     <span className="text-gray-600">{item.name} x{item.quantity}</span>
-                    <span className="font-medium">KES {((item.price || 0) * (item.quantity || 1)).toLocaleString()}</span>
+                    <span className="font-medium">KES {(item.price * (item.quantity || 1)).toLocaleString()}</span>
                   </div>
                 ))}
                 
@@ -179,7 +174,7 @@ export default function CartPage() {
                 href="/checkout"
                 className="w-full bg-purple-600 text-white py-4 rounded-lg hover:bg-purple-700 transition font-semibold flex items-center justify-center gap-2 text-lg"
               >
-                Proceed to Checkout <FaArrowRight />
+                Proceed to Checkout
               </Link>
 
               <Link

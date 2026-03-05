@@ -4,7 +4,7 @@ import Footer from '@/components/layout/Footer';
 import HeroSection from '@/components/home/HeroSection';
 import BenefitsSection from '@/components/home/BenefitsSection';
 import NewsletterSection from '@/components/home/NewsletterSection';
-import SimpleProductDisplay from '@/components/SimpleProductDisplay';
+import NewProductDisplay from '@/components/NewProductDisplay';
 
 export default function HomePage() {
   return (
@@ -13,7 +13,7 @@ export default function HomePage() {
       <main>
         <HeroSection />
         <BenefitsSection />
-        <SimpleProductDisplay />
+        <NewProductDisplay />
         <NewsletterSection />
       </main>
       <Footer />

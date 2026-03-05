@@ -2,12 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { cartDB } from '@/lib/cartDB';
-import { FaTrash, FaPlus, FaMinus, FaShoppingBag } from 'react-icons/fa';
+import { FaTrash, FaPlus, FaMinus, FaShoppingBag, FaArrowRight } from 'react-icons/fa';
 
 export default function CartPage() {
+  const router = useRouter();
   const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
@@ -15,14 +17,18 @@ export default function CartPage() {
   useEffect(() => {
     loadCart();
     
-    const handleCartUpdate = () => loadCart();
-    window.addEventListener('cartUpdated', handleCartUpdate);
+    const handleCartUpdate = () => {
+      console.log('Cart updated, reloading...');
+      loadCart();
+    };
     
+    window.addEventListener('cartUpdated', handleCartUpdate);
     return () => window.removeEventListener('cartUpdated', handleCartUpdate);
   }, []);
 
   const loadCart = () => {
     const items = cartDB.getCart();
+    console.log('Cart items:', items);
     setCart(items);
     setTotal(cartDB.getTotalPrice());
     setLoading(false);
@@ -35,6 +41,7 @@ export default function CartPage() {
   };
 
   const handleUpdateQuantity = (id, newQuantity) => {
+    if (newQuantity < 1) return;
     cartDB.updateQuantity(id, newQuantity);
   };
 
@@ -42,6 +49,14 @@ export default function CartPage() {
     if (confirm('Clear your entire cart?')) {
       cartDB.clearCart();
     }
+  };
+
+  const handleCheckout = () => {
+    if (cart.length === 0) {
+      alert('Your cart is empty!');
+      return;
+    }
+    router.push('/checkout');
   };
 
   if (loading) {
@@ -66,10 +81,10 @@ export default function CartPage() {
             <h1 className="text-3xl font-bold text-gray-800 mb-4">Your Cart is Empty</h1>
             <p className="text-gray-600 mb-8">Start shopping to add items to your cart!</p>
             <Link 
-              href="/" 
+              href="/products" 
               className="inline-block bg-purple-600 text-white px-8 py-3 rounded-lg hover:bg-purple-700 transition"
             >
-              Continue Shopping
+              Browse Products
             </Link>
           </div>
         </div>
@@ -98,6 +113,7 @@ export default function CartPage() {
                   src={item.image || 'https://images.unsplash.com/photo-1594035910387-fea47794261f?w=100'} 
                   alt={item.name}
                   className="w-24 h-24 object-cover rounded-lg"
+                  onError={(e) => e.target.src = 'https://images.unsplash.com/photo-1594035910387-fea47794261f?w=100'}
                 />
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold text-gray-800">{item.name}</h3>
@@ -107,12 +123,12 @@ export default function CartPage() {
                     <div className="flex items-center border rounded-lg">
                       <button 
                         onClick={() => handleUpdateQuantity(item.id, (item.quantity || 1) - 1)}
-                        className="p-2 hover:bg-gray-100 transition"
+                        className="p-2 hover:bg-gray-100 transition disabled:opacity-50"
                         disabled={item.quantity <= 1}
                       >
                         <FaMinus size={12} />
                       </button>
-                      <span className="px-4 py-2 border-x">{item.quantity || 1}</span>
+                      <span className="px-4 py-2 border-x min-w-[40px] text-center">{item.quantity || 1}</span>
                       <button 
                         onClick={() => handleUpdateQuantity(item.id, (item.quantity || 1) + 1)}
                         className="p-2 hover:bg-gray-100 transition"
@@ -167,15 +183,18 @@ export default function CartPage() {
                     <span>Total</span>
                     <span className="text-purple-600">KES {total.toLocaleString()}</span>
                   </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Free shipping on orders over KES 5,000
+                  </p>
                 </div>
               </div>
 
-              <Link
-                href="/checkout"
+              <button
+                onClick={handleCheckout}
                 className="w-full bg-purple-600 text-white py-4 rounded-lg hover:bg-purple-700 transition font-semibold flex items-center justify-center gap-2 text-lg"
               >
-                Proceed to Checkout
-              </Link>
+                Proceed to Checkout <FaArrowRight />
+              </button>
 
               <Link
                 href="/products"

@@ -1,5 +1,5 @@
-﻿// Universal cart utility
-const CART_KEY = 'mosketh_cart_v2';
+﻿// Universal cart utility with improved storage
+const CART_KEY = 'mosketh_cart_v3';
 
 export const cartDB = {
   // Get cart items
@@ -19,25 +19,27 @@ export const cartDB = {
       const cart = cartDB.getCart();
       const existingItem = cart.find(item => item.id === product.id);
       
+      let updatedCart;
       if (existingItem) {
-        existingItem.quantity = (existingItem.quantity || 1) + 1;
+        updatedCart = cart.map(item => 
+          item.id === product.id 
+            ? { ...item, quantity: (item.quantity || 1) + 1 }
+            : item
+        );
       } else {
-        cart.push({
+        updatedCart = [...cart, {
           id: product.id,
           name: product.name,
           price: product.priceKES,
           quantity: 1,
           image: product.images?.[0] || ''
-        });
+        }];
       }
       
-      localStorage.setItem(CART_KEY, JSON.stringify(cart));
-      
-      // Trigger events
+      localStorage.setItem(CART_KEY, JSON.stringify(updatedCart));
       window.dispatchEvent(new Event('cartUpdated'));
-      window.dispatchEvent(new StorageEvent('storage', { key: CART_KEY }));
       
-      return { success: true, cart };
+      return { success: true, cart: updatedCart };
     } catch (error) {
       console.error('Error adding to cart:', error);
       return { success: false, error: error.message };
@@ -48,12 +50,9 @@ export const cartDB = {
   removeItem: (id) => {
     try {
       const cart = cartDB.getCart();
-      const filtered = cart.filter(item => item.id !== id);
-      localStorage.setItem(CART_KEY, JSON.stringify(filtered));
-      
+      const updatedCart = cart.filter(item => item.id !== id);
+      localStorage.setItem(CART_KEY, JSON.stringify(updatedCart));
       window.dispatchEvent(new Event('cartUpdated'));
-      window.dispatchEvent(new StorageEvent('storage', { key: CART_KEY }));
-      
       return true;
     } catch (error) {
       console.error('Error removing item:', error);
@@ -67,14 +66,12 @@ export const cartDB = {
       if (quantity < 1) return false;
       
       const cart = cartDB.getCart();
-      const item = cart.find(item => item.id === id);
-      if (item) {
-        item.quantity = quantity;
-        localStorage.setItem(CART_KEY, JSON.stringify(cart));
-        
-        window.dispatchEvent(new Event('cartUpdated'));
-        window.dispatchEvent(new StorageEvent('storage', { key: CART_KEY }));
-      }
+      const updatedCart = cart.map(item => 
+        item.id === id ? { ...item, quantity } : item
+      );
+      
+      localStorage.setItem(CART_KEY, JSON.stringify(updatedCart));
+      window.dispatchEvent(new Event('cartUpdated'));
       return true;
     } catch (error) {
       console.error('Error updating quantity:', error);
@@ -86,7 +83,6 @@ export const cartDB = {
   clearCart: () => {
     localStorage.removeItem(CART_KEY);
     window.dispatchEvent(new Event('cartUpdated'));
-    window.dispatchEvent(new StorageEvent('storage', { key: CART_KEY }));
   },
 
   // Get total items

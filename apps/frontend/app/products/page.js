@@ -29,7 +29,6 @@ export default function ProductsPage() {
   useEffect(() => {
     loadProducts();
     
-    // Listen for updates from admin panel
     const handleProductsUpdate = () => {
       console.log('🔄 Products updated, reloading...');
       loadProducts();
@@ -40,39 +39,50 @@ export default function ProductsPage() {
   }, []);
 
   useEffect(() => {
-    filterProducts();
+    if (products.length > 0) {
+      filterProducts();
+    }
   }, [selectedCategory, searchTerm, sortBy, products]);
 
   const loadProducts = () => {
-    const allProducts = productDB.getAll();
-    console.log(`📦 Loaded ${allProducts.length} products`);
-    setProducts(allProducts);
-    setFilteredProducts(allProducts);
-    setLoading(false);
+    try {
+      const allProducts = productDB.getAll();
+      console.log(`📦 Loaded ${allProducts.length} products`);
+      setProducts(allProducts || []);
+      setFilteredProducts(allProducts || []);
+    } catch (error) {
+      console.error('Error loading products:', error);
+      setProducts([]);
+      setFilteredProducts([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const filterProducts = () => {
+    if (!products || products.length === 0) return;
+    
     let filtered = [...products];
 
     if (selectedCategory !== 'all') {
-      filtered = filtered.filter(p => p.category === selectedCategory);
+      filtered = filtered.filter(p => p && p.category === selectedCategory);
     }
 
     if (searchTerm) {
-      filtered = filtered.filter(p =>
-        p.name.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(p => 
+        p && p.name && p.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     switch (sortBy) {
       case 'price-low':
-        filtered.sort((a, b) => a.priceKES - b.priceKES);
+        filtered.sort((a, b) => (a.priceKES || 0) - (b.priceKES || 0));
         break;
       case 'price-high':
-        filtered.sort((a, b) => b.priceKES - a.priceKES);
+        filtered.sort((a, b) => (b.priceKES || 0) - (a.priceKES || 0));
         break;
       case 'name':
-        filtered.sort((a, b) => a.name.localeCompare(b.name));
+        filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
         break;
     }
 
@@ -142,10 +152,10 @@ export default function ProductsPage() {
         </div>
 
         <p className="text-gray-600 mb-6">
-          Showing <span className="font-semibold">{filteredProducts.length}</span> products
+          Showing <span className="font-semibold">{filteredProducts?.length || 0}</span> products
         </p>
 
-        {filteredProducts.length === 0 ? (
+        {!filteredProducts || filteredProducts.length === 0 ? (
           <div className="text-center py-16 bg-white rounded-2xl shadow-lg">
             <h2 className="text-2xl font-semibold text-gray-800 mb-4">No Products Found</h2>
             <p className="text-gray-600 mb-8">No products have been added yet.</p>
@@ -159,7 +169,7 @@ export default function ProductsPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredProducts.map(product => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product?.id || Math.random()} product={product || {}} />
             ))}
           </div>
         )}

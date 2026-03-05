@@ -7,7 +7,7 @@ import {
   FaBox, FaPlus, FaTrash, FaUpload, FaImage, 
   FaTachometerAlt, FaSignOutAlt, FaSave, FaSpinner,
   FaList, FaCheck, FaExclamationTriangle, FaStar,
-  FaEdit, FaTimes, FaSearch, FaFilter, FaSort
+  FaEdit, FaTimes, FaSearch, FaFilter
 } from 'react-icons/fa';
 
 export default function ManagePage() {
@@ -134,7 +134,7 @@ export default function ManagePage() {
       };
 
       productDB.add(productData);
-      showNotification('Product added successfully!', 'success');
+      showNotification('✅ Product added successfully!', 'success');
       
       setNewProduct({
         name: '',
@@ -152,7 +152,7 @@ export default function ManagePage() {
       
     } catch (error) {
       console.error('Error adding product:', error);
-      showNotification('Error adding product', 'error');
+      showNotification('❌ Error adding product', 'error');
     } finally {
       setLoading(false);
     }
@@ -165,34 +165,29 @@ export default function ManagePage() {
     setLoading(true);
     
     try {
-      const updatedProduct = {
-        ...editingProduct,
+      const updatedData = {
+        name: editingProduct.name,
         priceKES: Number(editingProduct.priceKES),
-        stock: Number(editingProduct.stock)
+        category: editingProduct.category,
+        description: editingProduct.description,
+        shortDescription: editingProduct.shortDescription,
+        stock: Number(editingProduct.stock),
+        images: editingProduct.images,
+        featured: editingProduct.featured,
+        slug: editingProduct.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
       };
 
-      // For now, we'll just update locally
-      // In production, you'd call an API
-      const adminProducts = JSON.parse(localStorage.getItem('mosketh_products_v2') || '[]');
-      const index = adminProducts.findIndex(p => p.id === editingProduct.id);
+      productDB.update(editingProduct.id, updatedData);
       
-      if (index >= 0) {
-        adminProducts[index] = updatedProduct;
-      } else {
-        adminProducts.push(updatedProduct);
-      }
-      
-      localStorage.setItem('mosketh_products_v2', JSON.stringify(adminProducts));
-      
-      showNotification('Product updated successfully!', 'success');
+      showNotification('✅ Product updated successfully!', 'success');
       setEditingProduct(null);
       setImagePreview(null);
       loadProducts();
-      window.dispatchEvent(new Event('productsUpdated'));
+      setActiveTab('products');
       
     } catch (error) {
       console.error('Error updating product:', error);
-      showNotification('Error updating product', 'error');
+      showNotification('❌ Error updating product', 'error');
     } finally {
       setLoading(false);
     }
@@ -202,17 +197,12 @@ export default function ManagePage() {
     if (!confirm('Are you sure you want to delete this product?')) return;
     
     try {
-      const adminProducts = JSON.parse(localStorage.getItem('mosketh_products_v2') || '[]');
-      const filtered = adminProducts.filter(p => p.id !== id);
-      localStorage.setItem('mosketh_products_v2', JSON.stringify(filtered));
-      
-      showNotification('Product deleted successfully', 'success');
+      productDB.delete(id);
+      showNotification('✅ Product deleted successfully', 'success');
       loadProducts();
-      window.dispatchEvent(new Event('productsUpdated'));
-      
     } catch (error) {
       console.error('Error deleting product:', error);
-      showNotification('Error deleting product', 'error');
+      showNotification('❌ Error deleting product', 'error');
     }
   };
 
@@ -340,7 +330,7 @@ export default function ManagePage() {
           </div>
         )}
 
-        {/* Products List with Edit/Delete */}
+        {/* Products List */}
         {activeTab === 'products' && (
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">

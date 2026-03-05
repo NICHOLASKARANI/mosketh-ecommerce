@@ -11,18 +11,13 @@ export default function HomeProducts() {
   useEffect(() => {
     loadProducts();
     
-    // Listen for storage changes
-    const handleStorageChange = () => {
-      loadProducts();
-    };
-    
+    const handleStorageChange = () => loadProducts();
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const loadProducts = () => {
     try {
-      // ONLY load products from localStorage (admin panel)
       const saved = localStorage.getItem('mosketh_products');
       const adminProducts = saved ? JSON.parse(saved) : [];
       

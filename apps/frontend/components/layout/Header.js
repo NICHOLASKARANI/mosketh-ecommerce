@@ -1,21 +1,28 @@
 ﻿'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { FaShoppingCart, FaHeart, FaUser, FaSearch, FaBars, FaTimes } from 'react-icons/fa';
-import { useCartStore } from '@/store/cartStore';
-import { useWishlistStore } from '@/store/wishlistStore';
+import { cartDB } from '@/lib/cartDB';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const cartItems = useCartStore((state) => state.items);
-  const wishlistItems = useWishlistStore((state) => state.items);
+  const [cartCount, setCartCount] = useState(0);
+  const [logoError, setLogoError] = useState(false);
 
-  const cartCount = cartItems?.reduce((total, item) => total + (item.quantity || 1), 0) || 0;
-  const wishlistCount = wishlistItems?.length || 0;
+  useEffect(() => {
+    setCartCount(cartDB.getTotalItems());
+    
+    const handleCartUpdate = () => {
+      setCartCount(cartDB.getTotalItems());
+    };
+    
+    window.addEventListener('cartUpdated', handleCartUpdate);
+    return () => window.removeEventListener('cartUpdated', handleCartUpdate);
+  }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -28,25 +35,30 @@ export default function Header() {
     <header className="bg-white shadow-md sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
-          {/* Logo with Image */}
+          {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <Image 
-              src="/logo.png"  // If saved in public folder
-              // OR use direct URL: src="https://i.ibb.co/your-image/logo.png"
-              alt="Mosketh Perfumes & Beauty"
-              width={50}
-              height={50}
-              className="object-contain"
-            />
+            {!logoError ? (
+              <Image 
+                src="/logo.png"
+                alt="Mosketh Perfumes & Beauty"
+                width={50}
+                height={50}
+                className="object-contain rounded-full"
+                onError={() => setLogoError(true)}
+              />
+            ) : (
+              <div className="w-[50px] h-[50px] bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                M
+              </div>
+            )}
             <div className="flex flex-col">
-              <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 text-transparent bg-clip-text leading-tight">
+              <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 text-transparent bg-clip-text">
                 MosKeth
               </span>
-              <span className="text-xs text-gray-600 font-light tracking-wider">BEAUTY&PERFUMES</span>
+              <span className="text-xs text-gray-600 font-light">BEAUTY&PERFUMES</span>
             </div>
           </Link>
 
-          {/* Rest of the header remains the same... */}
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
             <Link href="/" className="text-gray-700 hover:text-purple-600 transition font-medium">
@@ -71,15 +83,6 @@ export default function Header() {
             >
               <FaSearch size={20} />
             </button>
-
-            <Link href="/wishlist" className="text-gray-600 hover:text-purple-600 transition relative">
-              <FaHeart size={20} />
-              {wishlistCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                  {wishlistCount}
-                </span>
-              )}
-            </Link>
 
             <Link href="/cart" className="text-gray-600 hover:text-purple-600 transition relative">
               <FaShoppingCart size={20} />

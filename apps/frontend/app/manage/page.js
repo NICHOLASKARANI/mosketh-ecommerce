@@ -98,12 +98,21 @@ export default function ManagePage() {
     
     const reader = new FileReader();
     reader.onloadend = () => {
-      setImagePreview(reader.result);
+      const imageData = reader.result;
+      setImagePreview(imageData);
+      
       if (editingProduct) {
-        setEditingProduct({ ...editingProduct, images: [reader.result] });
+        setEditingProduct({ 
+          ...editingProduct, 
+          images: [imageData] 
+        });
       } else {
-        setNewProduct({ ...newProduct, images: [reader.result] });
+        setNewProduct({ 
+          ...newProduct, 
+          images: [imageData] 
+        });
       }
+      
       setUploading(false);
       showNotification('Image uploaded successfully', 'success');
     };
@@ -172,7 +181,7 @@ export default function ManagePage() {
         description: editingProduct.description,
         shortDescription: editingProduct.shortDescription,
         stock: Number(editingProduct.stock),
-        images: editingProduct.images,
+        images: editingProduct.images || ['https://images.unsplash.com/photo-1594035910387-fea47794261f?w=400'],
         featured: editingProduct.featured,
         slug: editingProduct.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
       };
@@ -218,7 +227,6 @@ export default function ManagePage() {
     setActiveTab('products');
   };
 
-  // Filter products based on search and category
   const filteredProducts = products.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = filterCategory === 'all' || p.category === filterCategory;
@@ -304,7 +312,6 @@ export default function ManagePage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 pb-12">
-        {/* Dashboard */}
         {activeTab === 'dashboard' && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="bg-white rounded-xl shadow-lg p-6">
@@ -330,7 +337,6 @@ export default function ManagePage() {
           </div>
         )}
 
-        {/* Products List */}
         {activeTab === 'products' && (
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
@@ -423,7 +429,6 @@ export default function ManagePage() {
           </div>
         )}
 
-        {/* Add Product Form */}
         {activeTab === 'add' && (
           <div className="bg-white rounded-xl shadow-lg p-6">
             <h2 className="text-2xl font-bold mb-6">Add New Product</h2>
@@ -472,7 +477,6 @@ export default function ManagePage() {
           </div>
         )}
 
-        {/* Edit Product Form */}
         {activeTab === 'edit' && editingProduct && (
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex justify-between items-center mb-6">

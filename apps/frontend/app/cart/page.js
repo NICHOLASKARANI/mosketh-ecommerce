@@ -18,7 +18,6 @@ export default function CartPage() {
     loadCart();
     
     const handleCartUpdate = () => {
-      console.log('Cart updated, reloading...');
       loadCart();
     };
     
@@ -28,7 +27,6 @@ export default function CartPage() {
 
   const loadCart = () => {
     const items = cartDB.getCart();
-    console.log('Cart items:', items);
     setCart(items);
     setTotal(cartDB.getTotalPrice());
     setLoading(false);
@@ -56,6 +54,7 @@ export default function CartPage() {
       alert('Your cart is empty!');
       return;
     }
+    // Redirect to checkout page
     router.push('/checkout');
   };
 

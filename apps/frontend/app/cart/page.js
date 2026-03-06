@@ -54,7 +54,9 @@ export default function CartPage() {
       alert('Your cart is empty!');
       return;
     }
-    // Redirect to checkout page
+    // Save cart to session for checkout
+    sessionStorage.setItem('checkout_cart', JSON.stringify(cart));
+    sessionStorage.setItem('checkout_total', total.toString());
     router.push('/checkout');
   };
 

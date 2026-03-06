@@ -5,15 +5,14 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import { cart } from '@/lib/cart';
-import { FaArrowLeft, FaMobile, FaWhatsapp, FaLock, FaTruck, FaMapMarkerAlt, FaUser, FaEnvelope, FaPhone } from 'react-icons/fa';
+import { FaArrowLeft, FaMobile, FaWhatsapp, FaLock } from 'react-icons/fa';
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const [step, setStep] = useState(1);
-  const [items, setItems] = useState([]);
+  const [cart, setCart] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -26,14 +25,18 @@ export default function CheckoutPage() {
   const [orderPlaced, setOrderPlaced] = useState(false);
 
   useEffect(() => {
-    const cartItems = cart.getItems();
-    if (cartItems.length === 0) {
+    // Load cart from session storage
+    const savedCart = sessionStorage.getItem('checkout_cart');
+    const savedTotal = sessionStorage.getItem('checkout_total');
+    
+    if (savedCart) {
+      setCart(JSON.parse(savedCart));
+      setTotal(parseFloat(savedTotal || '0'));
+      setLoading(false);
+    } else {
+      // If no cart in session, redirect to cart page
       router.push('/cart');
-      return;
     }
-    setItems(cartItems);
-    setTotal(cart.getTotalPrice());
-    setLoading(false);
   }, [router]);
 
   const handleInputChange = (e) => {
@@ -50,14 +53,16 @@ export default function CheckoutPage() {
   };
 
   const handlePlaceOrder = () => {
+    // Here you would integrate with payment gateway
     setOrderPlaced(true);
-    // Clear cart after successful order
-    cart.clearCart();
+    // Clear cart
+    localStorage.removeItem('mosketh_cart_v3');
+    sessionStorage.removeItem('checkout_cart');
+    sessionStorage.removeItem('checkout_total');
   };
 
-  const subtotal = total;
-  const deliveryFee = subtotal > 5000 ? 0 : 350;
-  const grandTotal = subtotal + deliveryFee;
+  const deliveryFee = total > 5000 ? 0 : 350;
+  const grandTotal = total + deliveryFee;
 
   if (loading) {
     return (
@@ -107,21 +112,21 @@ export default function CheckoutPage() {
       <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-12">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h1 className="text-4xl font-bold mb-4">Checkout</h1>
-          <p className="text-xl opacity-90">Complete your purchase in a few simple steps</p>
+          <p className="text-xl opacity-90">Complete your purchase</p>
         </div>
       </div>
 
       <main className="max-w-4xl mx-auto px-4 py-12">
         {/* Progress Steps */}
         <div className="flex items-center justify-between mb-12">
-          {[1, 2, 3, 4].map((i) => (
+          {[1, 2, 3].map((i) => (
             <div key={i} className="flex items-center flex-1">
               <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
                 step >= i ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-500'
               }`}>
                 {i}
               </div>
-              {i < 4 && (
+              {i < 3 && (
                 <div className={`flex-1 h-1 mx-2 ${
                   step > i ? 'bg-purple-600' : 'bg-gray-200'
                 }`} />
@@ -136,7 +141,7 @@ export default function CheckoutPage() {
             <h2 className="text-2xl font-bold mb-6">Step 1: Review Your Order</h2>
             
             <div className="space-y-4 mb-6">
-              {items.map(item => (
+              {cart.map(item => (
                 <div key={item.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
                   <img 
                     src={item.image || 'https://images.unsplash.com/photo-1594035910387-fea47794261f?w=60'} 
@@ -155,7 +160,7 @@ export default function CheckoutPage() {
             <div className="border-t pt-4 mb-6">
               <div className="flex justify-between mb-2">
                 <span className="text-gray-600">Subtotal</span>
-                <span className="font-semibold">KES {subtotal.toLocaleString()}</span>
+                <span className="font-semibold">KES {total.toLocaleString()}</span>
               </div>
               <div className="flex justify-between mb-2">
                 <span className="text-gray-600">Delivery Fee</span>
@@ -185,50 +190,41 @@ export default function CheckoutPage() {
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Full Name *</label>
-                  <div className="relative">
-                    <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
-                      placeholder="John Doe"
-                    />
-                  </div>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-600"
+                    placeholder="John Doe"
+                  />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-2">Email Address *</label>
-                  <div className="relative">
-                    <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
-                      placeholder="john@example.com"
-                    />
-                  </div>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-600"
+                    placeholder="john@example.com"
+                  />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-2">Phone Number *</label>
-                  <div className="relative">
-                    <FaPhone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
-                      placeholder="0712345678"
-                    />
-                  </div>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-600"
+                    placeholder="0712345678"
+                  />
                 </div>
 
                 <div>
@@ -239,7 +235,7 @@ export default function CheckoutPage() {
                     value={formData.city}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                    className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-600"
                     placeholder="Nairobi"
                   />
                 </div>
@@ -247,53 +243,29 @@ export default function CheckoutPage() {
 
               <div>
                 <label className="block text-sm font-medium mb-2">Delivery Address *</label>
-                <div className="relative">
-                  <FaMapMarkerAlt className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <input
-                    type="text"
-                    name="address"
-                    value={formData.address}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
-                    placeholder="Shop F5, Superior Centre, Kimathi Street"
-                  />
-                </div>
+                <input
+                  type="text"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-600"
+                  placeholder="Shop F5, Superior Centre, Kimathi Street"
+                />
               </div>
 
               <div>
                 <label className="block text-sm font-medium mb-2">Delivery Method *</label>
-                <div className="grid md:grid-cols-3 gap-3">
-                  {[
-                    { value: 'standard', label: 'Standard', price: 350, time: '1-3 days', icon: FaTruck },
-                    { value: 'express', label: 'Express', price: 800, time: '24 hours', icon: FaTruck },
-                    { value: 'pickup', label: 'Store Pickup', price: 0, time: 'Free', icon: FaMapMarkerAlt }
-                  ].map(method => {
-                    const Icon = method.icon;
-                    return (
-                      <label key={method.value} className={`border rounded-lg p-4 cursor-pointer transition ${
-                        formData.deliveryMethod === method.value 
-                          ? 'border-purple-600 bg-purple-50' 
-                          : 'border-gray-200 hover:border-purple-300'
-                      }`}>
-                        <input
-                          type="radio"
-                          name="deliveryMethod"
-                          value={method.value}
-                          checked={formData.deliveryMethod === method.value}
-                          onChange={handleInputChange}
-                          className="hidden"
-                        />
-                        <Icon className={`text-2xl mb-2 ${
-                          formData.deliveryMethod === method.value ? 'text-purple-600' : 'text-gray-400'
-                        }`} />
-                        <p className="font-semibold">{method.label}</p>
-                        <p className="text-sm text-gray-500">{method.time}</p>
-                        <p className="text-sm font-bold text-purple-600">KES {method.price}</p>
-                      </label>
-                    );
-                  })}
-                </div>
+                <select
+                  name="deliveryMethod"
+                  value={formData.deliveryMethod}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-600"
+                >
+                  <option value="standard">Standard Delivery (1-3 days) - KES 350</option>
+                  <option value="express">Express Delivery (24 hours) - KES 800</option>
+                  <option value="pickup">Store Pickup (Free)</option>
+                </select>
               </div>
 
               <div className="flex gap-4 mt-6">
@@ -359,7 +331,7 @@ export default function CheckoutPage() {
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span>KES {subtotal.toLocaleString()}</span>
+                  <span>KES {total.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Delivery</span>
@@ -390,8 +362,6 @@ export default function CheckoutPage() {
             </div>
           </div>
         )}
-
-        {/* Step 4: Confirmation (handled above) */}
       </main>
 
       <Footer />

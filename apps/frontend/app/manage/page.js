@@ -102,6 +102,7 @@ export default function ManagePage() {
       setImagePreview(imageData);
       
       if (editingProduct) {
+        // Update editing product with new image
         setEditingProduct({ 
           ...editingProduct, 
           images: [imageData] 
@@ -174,6 +175,11 @@ export default function ManagePage() {
     setLoading(true);
     
     try {
+      // Ensure images array exists
+      const updatedImages = editingProduct.images && editingProduct.images.length > 0 
+        ? editingProduct.images 
+        : ['https://images.unsplash.com/photo-1594035910387-fea47794261f?w=400'];
+      
       const updatedData = {
         name: editingProduct.name,
         priceKES: Number(editingProduct.priceKES),
@@ -181,18 +187,22 @@ export default function ManagePage() {
         description: editingProduct.description,
         shortDescription: editingProduct.shortDescription,
         stock: Number(editingProduct.stock),
-        images: editingProduct.images || ['https://images.unsplash.com/photo-1594035910387-fea47794261f?w=400'],
+        images: updatedImages,
         featured: editingProduct.featured,
         slug: editingProduct.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
       };
 
-      productDB.update(editingProduct.id, updatedData);
+      const result = productDB.update(editingProduct.id, updatedData);
       
-      showNotification('✅ Product updated successfully!', 'success');
-      setEditingProduct(null);
-      setImagePreview(null);
-      loadProducts();
-      setActiveTab('products');
+      if (result) {
+        showNotification('✅ Product updated successfully!', 'success');
+        setEditingProduct(null);
+        setImagePreview(null);
+        loadProducts();
+        setActiveTab('products');
+      } else {
+        showNotification('❌ Error updating product', 'error');
+      }
       
     } catch (error) {
       console.error('Error updating product:', error);
@@ -217,7 +227,7 @@ export default function ManagePage() {
 
   const startEditing = (product) => {
     setEditingProduct(product);
-    setImagePreview(product.images[0]);
+    setImagePreview(product.images?.[0] || null);
     setActiveTab('edit');
   };
 
@@ -227,6 +237,7 @@ export default function ManagePage() {
     setActiveTab('products');
   };
 
+  // Filter products based on search and category
   const filteredProducts = products.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = filterCategory === 'all' || p.category === filterCategory;
@@ -312,6 +323,7 @@ export default function ManagePage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 pb-12">
+        {/* Dashboard */}
         {activeTab === 'dashboard' && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="bg-white rounded-xl shadow-lg p-6">
@@ -337,6 +349,7 @@ export default function ManagePage() {
           </div>
         )}
 
+        {/* Products List */}
         {activeTab === 'products' && (
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
@@ -387,7 +400,10 @@ export default function ManagePage() {
                     {filteredProducts.map(p => (
                       <tr key={p.id} className="hover:bg-gray-50">
                         <td className="px-4 py-3">
-                          <img src={p.images[0]} alt={p.name} className="w-12 h-12 object-cover rounded" />
+                          <img src={p.images?.[0] || 'https://images.unsplash.com/photo-1594035910387-fea47794261f?w=400'} 
+                               alt={p.name} 
+                               className="w-12 h-12 object-cover rounded"
+                               onError={(e) => e.target.src = 'https://images.unsplash.com/photo-1594035910387-fea47794261f?w=400'} />
                         </td>
                         <td className="px-4 py-3 font-medium">{p.name}</td>
                         <td className="px-4 py-3">KES {p.priceKES}</td>
@@ -429,6 +445,7 @@ export default function ManagePage() {
           </div>
         )}
 
+        {/* Add Product Form */}
         {activeTab === 'add' && (
           <div className="bg-white rounded-xl shadow-lg p-6">
             <h2 className="text-2xl font-bold mb-6">Add New Product</h2>
@@ -437,7 +454,10 @@ export default function ManagePage() {
                 {imagePreview ? (
                   <div>
                     <img src={imagePreview} alt="Preview" className="max-h-48 mx-auto mb-2" />
-                    <button type="button" onClick={() => setImagePreview(null)} className="text-red-500">Remove</button>
+                    <button type="button" onClick={() => {
+                      setImagePreview(null);
+                      setNewProduct({...newProduct, images: []});
+                    }} className="text-red-500">Remove</button>
                   </div>
                 ) : (
                   <div>
@@ -477,6 +497,7 @@ export default function ManagePage() {
           </div>
         )}
 
+        {/* Edit Product Form */}
         {activeTab === 'edit' && editingProduct && (
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex justify-between items-center mb-6">
@@ -491,7 +512,10 @@ export default function ManagePage() {
                 {imagePreview ? (
                   <div>
                     <img src={imagePreview} alt="Preview" className="max-h-48 mx-auto mb-2" />
-                    <button type="button" onClick={() => setImagePreview(null)} className="text-red-500">Remove</button>
+                    <button type="button" onClick={() => {
+                      setImagePreview(null);
+                      setEditingProduct({...editingProduct, images: []});
+                    }} className="text-red-500">Remove</button>
                   </div>
                 ) : (
                   <div>

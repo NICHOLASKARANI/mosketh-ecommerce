@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { productDB } from '@/lib/productDB';
+import { cartDB } from '@/lib/cartDB';  // THIS WAS MISSING
 import { FaSearch } from 'react-icons/fa';
 
 const categories = [

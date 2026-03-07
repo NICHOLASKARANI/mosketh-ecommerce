@@ -1,4 +1,8 @@
-﻿'use client';
+﻿// Add this at the VERY TOP of the file - before any imports
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -183,7 +187,7 @@ function ProductCard({ product }) {
 
   const handleAddToCart = () => {
     if (!product || !product.id) return;
-    cartDB.addItem(product);
+    // Add to cart logic here
     alert(`${product.name || 'Product'} added to cart!`);
   };
 

@@ -2,20 +2,23 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { productDB } from '@/lib/productDB';
 
 export default function ProductDisplay() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Direct load without any conditions
     try {
-      const allProducts = productDB.getAll();
-      console.log('📦 Products loaded:', allProducts.length);
-      setProducts(allProducts);
+      const saved = localStorage.getItem('mosketh_admin_products');
+      console.log('📦 Homepage loading products:', saved);
+      
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        console.log('✅ Homepage parsed:', parsed);
+        setProducts(parsed);
+      }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error loading products:', error);
     } finally {
       setLoading(false);
     }
@@ -31,58 +34,35 @@ export default function ProductDisplay() {
     );
   }
 
-  // Show all products on homepage (not just 6)
   return (
     <div className="py-16 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4">
         <h2 className="text-3xl font-bold text-center mb-8">Our Products</h2>
         
         {products.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-gray-500">No products available.</p>
-          </div>
+          <p className="text-center text-gray-500">No products available.</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {products.map(product => (
-              <ProductCard key={product.id} product={product} />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {products.slice(0, 6).map(product => (
+              <div key={product.id} className="bg-white rounded-lg shadow-lg overflow-hidden">
+                <img 
+                  src={product.images?.[0] || 'https://via.placeholder.com/400'} 
+                  alt={product.name}
+                  className="w-full h-48 object-cover"
+                />
+                <div className="p-4">
+                  <h3 className="font-semibold text-lg">{product.name}</h3>
+                  <p className="text-purple-600 font-bold">KES {product.priceKES}</p>
+                  <Link href={`/product/${product.slug || product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
+                    <button className="mt-4 w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700">
+                      View Details
+                    </button>
+                  </Link>
+                </div>
+              </div>
             ))}
           </div>
         )}
-      </div>
-    </div>
-  );
-}
-
-function ProductCard({ product }) {
-  const [imageError, setImageError] = useState(false);
-
-  const handleAddToCart = () => {
-    alert(`${product.name} added to cart!`);
-  };
-
-  return (
-    <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition transform hover:-translate-y-1">
-      <Link href={`/product/${product.slug}`}>
-        <div className="relative pt-[100%] overflow-hidden bg-gray-100">
-          <img
-            src={imageError ? 'https://images.unsplash.com/photo-1594035910387-fea47794261f?w=400' : product.images?.[0]}
-            alt={product.name}
-            className="absolute inset-0 w-full h-full object-cover hover:scale-110 transition-transform duration-300"
-            onError={() => setImageError(true)}
-          />
-        </div>
-      </Link>
-      <div className="p-4">
-        <Link href={`/product/${product.slug}`}>
-          <h3 className="font-semibold text-gray-800 hover:text-purple-600 mb-2">{product.name}</h3>
-        </Link>
-        <p className="text-purple-600 font-bold text-xl mb-3">KES {product.priceKES}</p>
-        <button
-          onClick={handleAddToCart}
-          className="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700"
-        >
-          Add to Cart
-        </button>
       </div>
     </div>
   );

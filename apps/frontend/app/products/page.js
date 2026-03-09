@@ -1,8 +1,4 @@
-﻿// Add this at the VERY TOP of the file - before any imports
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -11,6 +7,9 @@ import Footer from '@/components/layout/Footer';
 import { productDB } from '@/lib/productDB';
 import { cartDB } from '@/lib/cartDB';
 import { FaSearch } from 'react-icons/fa';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 const categories = [
   { id: 'all', name: 'All Products' },
@@ -187,7 +186,6 @@ function ProductCard({ product }) {
 
   const handleAddToCart = () => {
     if (!product || !product.id) return;
-    // Add to cart logic here
     alert(`${product.name || 'Product'} added to cart!`);
   };
 

@@ -4,7 +4,10 @@ import Footer from '@/components/layout/Footer';
 import HeroSection from '@/components/home/HeroSection';
 import BenefitsSection from '@/components/home/BenefitsSection';
 import NewsletterSection from '@/components/home/NewsletterSection';
-import ProductDisplay from '@/components/ProductDisplay';
+import ProductDisplay from '@/components/ProductDisplay';  // THIS WAS MISSING
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default function HomePage() {
   return (
@@ -13,7 +16,7 @@ export default function HomePage() {
       <main>
         <HeroSection />
         <BenefitsSection />
-        <ProductDisplay />
+        <ProductDisplay />  {/* THIS WAS MISSING */}
         <NewsletterSection />
       </main>
       <Footer />

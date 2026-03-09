@@ -1,14 +1,11 @@
-﻿// Universal cart utility with improved storage
-const CART_KEY = 'mosketh_cart_v3';
-
+﻿// Simple cart utility using localStorage
 export const cartDB = {
   // Get cart items
   getCart: () => {
     try {
-      const cart = localStorage.getItem(CART_KEY);
+      const cart = localStorage.getItem('mosketh_cart');
       return cart ? JSON.parse(cart) : [];
-    } catch (error) {
-      console.error('Error loading cart:', error);
+    } catch {
       return [];
     }
   },
@@ -19,69 +16,39 @@ export const cartDB = {
       const cart = cartDB.getCart();
       const existingItem = cart.find(item => item.id === product.id);
       
-      let updatedCart;
       if (existingItem) {
-        updatedCart = cart.map(item => 
-          item.id === product.id 
-            ? { ...item, quantity: (item.quantity || 1) + 1 }
-            : item
-        );
+        existingItem.quantity = (existingItem.quantity || 1) + 1;
       } else {
-        updatedCart = [...cart, {
+        cart.push({
           id: product.id,
           name: product.name,
           price: product.priceKES,
           quantity: 1,
           image: product.images?.[0] || ''
-        }];
+        });
       }
       
-      localStorage.setItem(CART_KEY, JSON.stringify(updatedCart));
+      localStorage.setItem('mosketh_cart', JSON.stringify(cart));
       window.dispatchEvent(new Event('cartUpdated'));
       
-      return { success: true, cart: updatedCart };
+      return { success: true, message: 'Added to cart!' };
     } catch (error) {
       console.error('Error adding to cart:', error);
-      return { success: false, error: error.message };
+      return { success: false, message: 'Failed to add to cart' };
     }
   },
 
   // Remove item
   removeItem: (id) => {
-    try {
-      const cart = cartDB.getCart();
-      const updatedCart = cart.filter(item => item.id !== id);
-      localStorage.setItem(CART_KEY, JSON.stringify(updatedCart));
-      window.dispatchEvent(new Event('cartUpdated'));
-      return true;
-    } catch (error) {
-      console.error('Error removing item:', error);
-      return false;
-    }
-  },
-
-  // Update quantity
-  updateQuantity: (id, quantity) => {
-    try {
-      if (quantity < 1) return false;
-      
-      const cart = cartDB.getCart();
-      const updatedCart = cart.map(item => 
-        item.id === id ? { ...item, quantity } : item
-      );
-      
-      localStorage.setItem(CART_KEY, JSON.stringify(updatedCart));
-      window.dispatchEvent(new Event('cartUpdated'));
-      return true;
-    } catch (error) {
-      console.error('Error updating quantity:', error);
-      return false;
-    }
+    const cart = cartDB.getCart();
+    const filtered = cart.filter(item => item.id !== id);
+    localStorage.setItem('mosketh_cart', JSON.stringify(filtered));
+    window.dispatchEvent(new Event('cartUpdated'));
   },
 
   // Clear cart
   clearCart: () => {
-    localStorage.removeItem(CART_KEY);
+    localStorage.removeItem('mosketh_cart');
     window.dispatchEvent(new Event('cartUpdated'));
   },
 

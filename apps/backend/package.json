@@ -1,24 +1,22 @@
-{
+﻿{
   "name": "mosketh-backend",
   "version": "1.0.0",
   "type": "module",
+  "main": "server.js",
   "scripts": {
-    "dev": "nodemon src/server.js",
-    "build": "prisma generate",
-    "start": "node src/server.js",
-    "vercel-build": "prisma generate && prisma db push --accept-data-loss"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "dependencies": {
-    "@prisma/client": "^5.9.1",
-    "bcryptjs": "^2.4.3",
-    "cloudinary": "^2.5.1",
-    "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
     "express": "^4.18.2",
-    "jsonwebtoken": "^9.0.2"
+    "mongoose": "^7.5.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1"
   },
   "devDependencies": {
-    "nodemon": "^3.0.3",
-    "prisma": "^5.9.1"
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }

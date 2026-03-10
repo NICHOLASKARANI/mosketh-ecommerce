@@ -1,7 +1,10 @@
-﻿const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-require('dotenv').config();
+﻿import express from 'express';
+import mongoose from 'mongoose';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import productRoutes from './routes/products.js';
+
+dotenv.config();
 
 const app = express();
 
@@ -25,7 +28,6 @@ mongoose.connect(MONGODB_URI, {
 });
 
 // Routes
-const productRoutes = require('./routes/products');
 app.use('/api/products', productRoutes);
 
 // Basic route

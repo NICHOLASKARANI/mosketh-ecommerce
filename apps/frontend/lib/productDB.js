@@ -1,25 +1,32 @@
-﻿// Universal product storage - ONLY admin products show
+﻿// Universal product storage with seed data
 const STORAGE_KEY = 'mosketh_admin_products';
+import { SEED_PRODUCTS } from './seedProducts';
 
 export const productDB = {
-  // Get all products - ONLY from admin storage
+  // Get all products
   getAll: () => {
     try {
       const adminProducts = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-      // Ensure we always return an array
-      const products = Array.isArray(adminProducts) ? adminProducts : [];
-      console.log(`📦 Loading ${products.length} admin products`);
-      return products;
+      
+      // If no admin products, use seed products
+      if (adminProducts.length === 0) {
+        console.log('🌱 Using seed products');
+        // Save seed products to localStorage for next time
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(SEED_PRODUCTS));
+        return SEED_PRODUCTS;
+      }
+      
+      return adminProducts;
     } catch (error) {
       console.error('Error loading products:', error);
-      return [];
+      return SEED_PRODUCTS;
     }
   },
 
   // Add product
   add: (product) => {
     try {
-      const adminProducts = productDB.getAll();
+      const adminProducts = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
       
       const newProduct = {
         ...product,
@@ -43,7 +50,7 @@ export const productDB = {
   // Update product
   update: (id, updatedData) => {
     try {
-      const adminProducts = productDB.getAll();
+      const adminProducts = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
       const index = adminProducts.findIndex(p => p.id === id);
       
       if (index >= 0) {
@@ -68,7 +75,7 @@ export const productDB = {
   // Delete product
   delete: (id) => {
     try {
-      const adminProducts = productDB.getAll();
+      const adminProducts = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
       const filtered = adminProducts.filter(p => p.id !== id);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
       window.dispatchEvent(new Event('productsUpdated'));

@@ -8,7 +8,7 @@ dotenv.config();
 
 const app = express();
 
-// Updated CORS Configuration - Allow multiple origins
+// CORS configuration
 app.use(cors({
   origin: [
     'http://localhost:3000',
@@ -23,21 +23,39 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Handle preflight requests
 app.options('*', cors());
-
 app.use(express.json({ limit: '50mb' }));
 
-// MongoDB Connection
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/mosketh';
+// MongoDB Connection with better error handling
+const MONGODB_URI = process.env.MONGODB_URI;
 
-mongoose.connect(MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-}).then(() => {
-  console.log('✅ Connected to MongoDB');
-}).catch(err => {
-  console.error('❌ MongoDB connection error:', err);
+if (!MONGODB_URI) {
+  console.error('❌ MONGODB_URI environment variable is not set');
+  process.exit(1);
+}
+
+const connectDB = async () => {
+  try {
+    await mongoose.connect(MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
+    });
+    console.log('✅ Connected to MongoDB');
+  } catch (err) {
+    console.error('❌ MongoDB connection error:', err.message);
+    console.error('Please check your MONGODB_URI environment variable');
+    // Retry connection after 10 seconds
+    setTimeout(connectDB, 10000);
+  }
+};
+
+connectDB();
+
+mongoose.connection.on('disconnected', () => {
+  console.log('⚠️ MongoDB disconnected, attempting to reconnect...');
+  connectDB();
 });
 
 // Routes
@@ -50,7 +68,18 @@ app.get('/', (req, res) => {
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+  const dbState = mongoose.connection.readyState;
+  const dbStatus = {
+    0: 'disconnected',
+    1: 'connected',
+    2: 'connecting',
+    3: 'disconnecting'
+  };
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    database: dbStatus[dbState] || 'unknown'
+  });
 });
 
 // Error handling middleware

@@ -1,8 +1,10 @@
 ﻿const categories = [
   { id: 'all', name: 'All Products' },
+  // Perfumes
   { id: 'mens-perfumes', name: "Men's Perfumes" },
   { id: 'womens-perfumes', name: "Women's Perfumes" },
   { id: 'unisex-perfumes', name: "Unisex Perfumes" },
+  // Body Care
   { id: 'deodorants', name: "Deodorants" },
   { id: 'body-mists', name: "Body Mists" },
   { id: 'lotions', name: "Lotions" },
@@ -10,12 +12,14 @@
   { id: 'soaps', name: "Soaps" },
   { id: 'shower-gels', name: "Shower Gels" },
   { id: 'body-scrubs', name: "Body Scrubs" },
+  // Face Care
   { id: 'facial-scrubs', name: "Facial Scrubs" },
   { id: 'face-serums', name: "Face Serums" },
   { id: 'lip-oils', name: "Lip Oils" },
   { id: 'face-masks', name: "Face Masks" },
-  { id: 'body-oils', name: "Body Oils" },
+  // Existing categories
   { id: 'face-creams', name: "Face Creams" },
+  { id: 'body-oils', name: "Body Oils" },
   { id: 'hair-products', name: "Hair Products" },
   { id: 'gift-sets', name: "Gift Sets" }
 ];

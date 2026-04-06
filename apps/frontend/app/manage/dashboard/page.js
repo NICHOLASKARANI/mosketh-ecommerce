@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -300,7 +300,7 @@ export default function AdminDashboard() {
                             onClick={() => removeImageField(index)}
                             className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
                           >
-                            ×
+                            Ã—
                           </button>
                         )}
                       </div>
@@ -391,7 +391,7 @@ export default function AdminDashboard() {
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    {product.featured ? '✓' : '✗'}
+                    {product.featured ? 'âœ“' : 'âœ—'}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex gap-2">

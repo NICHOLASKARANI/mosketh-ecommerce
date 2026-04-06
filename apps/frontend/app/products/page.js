@@ -1,4 +1,5 @@
-﻿'use client';
+﻿import categories from './categories.js';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -180,3 +181,4 @@ export default function ProductsPage() {
     </>
   );
 }
+

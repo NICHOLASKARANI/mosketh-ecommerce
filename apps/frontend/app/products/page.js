@@ -1,5 +1,4 @@
-﻿import categories from './categories.js';
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -11,11 +10,26 @@ import { FaSearch } from 'react-icons/fa';
 
 const categories = [
   { id: 'all', name: 'All Products' },
+  // Perfumes
   { id: 'mens-perfumes', name: "Men's Perfumes" },
   { id: 'womens-perfumes', name: "Women's Perfumes" },
   { id: 'unisex-perfumes', name: "Unisex Perfumes" },
-  { id: 'body-oils', name: "Body Oils" },
+  // Body Care
+  { id: 'deodorants', name: "Deodorants" },
+  { id: 'body-mists', name: "Body Mists" },
+  { id: 'lotions', name: "Lotions" },
+  { id: 'body-creams', name: "Body Creams/Solids" },
+  { id: 'soaps', name: "Soaps" },
+  { id: 'shower-gels', name: "Shower Gels" },
+  { id: 'body-scrubs', name: "Body Scrubs" },
+  // Face Care
+  { id: 'facial-scrubs', name: "Facial Scrubs" },
+  { id: 'face-serums', name: "Face Serums" },
+  { id: 'lip-oils', name: "Lip Oils" },
+  { id: 'face-masks', name: "Face Masks" },
+  // Existing categories
   { id: 'face-creams', name: "Face Creams" },
+  { id: 'body-oils', name: "Body Oils" },
   { id: 'hair-products', name: "Hair Products" },
   { id: 'gift-sets', name: "Gift Sets" }
 ];
@@ -181,4 +195,3 @@ export default function ProductsPage() {
     </>
   );
 }
-

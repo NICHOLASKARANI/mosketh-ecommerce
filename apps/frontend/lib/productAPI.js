@@ -1,7 +1,6 @@
 ﻿const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://mosketh-perfumes-beauty.onrender.com/api';
 
 export const productAPI = {
-  // Get all products
   getAll: async () => {
     try {
       const response = await fetch(`${API_URL}/products`);
@@ -13,7 +12,6 @@ export const productAPI = {
     }
   },
 
-  // Get single product
   getById: async (id) => {
     try {
       const response = await fetch(`${API_URL}/products/${id}`);
@@ -25,14 +23,11 @@ export const productAPI = {
     }
   },
 
-  // Create product
   create: async (productData) => {
     try {
       const response = await fetch(`${API_URL}/products`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(productData)
       });
       if (!response.ok) throw new Error('Failed to create product');
@@ -43,14 +38,11 @@ export const productAPI = {
     }
   },
 
-  // Update product
   update: async (id, productData) => {
     try {
       const response = await fetch(`${API_URL}/products/${id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(productData)
       });
       if (!response.ok) throw new Error('Failed to update product');
@@ -61,7 +53,6 @@ export const productAPI = {
     }
   },
 
-  // Delete product
   delete: async (id) => {
     try {
       const response = await fetch(`${API_URL}/products/${id}`, {

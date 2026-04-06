@@ -1,108 +1,71 @@
 ﻿'use client';
 
-import React, { useState, useEffect } from 'react';
-import { 
-  FaFacebook, FaTwitter, FaWhatsapp, FaInstagram, 
-  FaShareAlt, FaTimes, FaTiktok, FaTelegram 
-} from 'react-icons/fa';
+import { FaWhatsapp, FaFacebook, FaInstagram, FaTiktok, FaTwitter, FaCopy } from 'react-icons/fa';
 
-export default function SocialShare() {
-  const [showButtons, setShowButtons] = useState(false);
-  const [currentUrl, setCurrentUrl] = useState('');
+export default function SocialShare({ product, affiliateCode }) {
+  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const shareText = `Check out ${product.name} at Mosketh Perfumes & Beauty! Only KES ${product.priceKES?.toLocaleString()} 🎁✨`;
 
-  useEffect(() => {
-    setCurrentUrl(window.location.href);
-  }, []);
-
-  const shareText = "Check out Mosketh Perfumes & Beauty - Luxury fragrances in Kenya!";
-
-  const shareOnFacebook = () => {
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`, '_blank');
+  const shareLinks = {
+    whatsapp: `https://wa.me/?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`,
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+    twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`,
+    instagram: `instagram://library?AssetPath=${encodeURIComponent(shareUrl)}`, // Opens Instagram
+    tiktok: `https://www.tiktok.com/@mosketh_beauty` // Your TikTok profile
   };
 
-  const shareOnTwitter = () => {
-    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(currentUrl)}`, '_blank');
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(shareUrl);
+    alert('Link copied! Share with your friends!');
   };
 
-  const shareOnWhatsApp = () => {
-    window.open(`https://wa.me/?text=${encodeURIComponent(shareText + ' ' + currentUrl)}`, '_blank');
-  };
-
-  const shareOnTelegram = () => {
-    window.open(`https://t.me/share/url?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(shareText)}`, '_blank');
+  // Generate affiliate link
+  const getAffiliateLink = () => {
+    return `${shareUrl}?ref=${affiliateCode}`;
   };
 
   return (
-    <div className="fixed left-4 top-1/2 transform -translate-y-1/2 z-50">
-      {showButtons ? (
-        <div className="flex flex-col gap-3 bg-white p-3 rounded-2xl shadow-2xl animate-slideIn">
-          <button
-            onClick={shareOnFacebook}
-            className="bg-blue-600 text-white p-3 rounded-full hover:bg-blue-700 transition transform hover:scale-110"
-            title="Share on Facebook"
-          >
-            <FaFacebook size={20} />
-          </button>
-          <button
-            onClick={shareOnTwitter}
-            className="bg-blue-400 text-white p-3 rounded-full hover:bg-blue-500 transition transform hover:scale-110"
-            title="Share on Twitter"
-          >
-            <FaTwitter size={20} />
-          </button>
-          <button
-            onClick={shareOnWhatsApp}
-            className="bg-green-500 text-white p-3 rounded-full hover:bg-green-600 transition transform hover:scale-110"
-            title="Share on WhatsApp"
-          >
-            <FaWhatsapp size={20} />
-          </button>
-          <button
-            onClick={shareOnTelegram}
-            className="bg-blue-500 text-white p-3 rounded-full hover:bg-blue-600 transition transform hover:scale-110"
-            title="Share on Telegram"
-          >
-            <FaTelegram size={20} />
-          </button>
-          <button
-            onClick={() => setShowButtons(false)}
-            className="bg-red-500 text-white p-3 rounded-full hover:bg-red-600 transition"
-          >
-            <FaTimes size={20} />
-          </button>
-        </div>
-      ) : (
-        <button
-          onClick={() => setShowButtons(true)}
-          className="bg-purple-600 text-white p-4 rounded-full hover:bg-purple-700 transition shadow-lg transform hover:scale-110 animate-bounce-slow"
-          title="Share this page"
-        >
-          <FaShareAlt size={24} />
+    <div className="bg-white rounded-xl shadow-lg p-6">
+      <h3 className="font-bold text-lg mb-4">Share & Earn! 🎁</h3>
+      <p className="text-sm text-gray-600 mb-4">
+        Share this product with friends and family. When they buy, you both save!
+      </p>
+      
+      <div className="grid grid-cols-5 gap-2 mb-6">
+        <a href={shareLinks.whatsapp} target="_blank" rel="noopener noreferrer" 
+           className="bg-green-500 text-white p-3 rounded-lg hover:bg-green-600 transition text-center">
+          <FaWhatsapp className="mx-auto text-xl" />
+          <span className="text-xs mt-1 block">WhatsApp</span>
+        </a>
+        <a href={shareLinks.facebook} target="_blank" rel="noopener noreferrer"
+           className="bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition text-center">
+          <FaFacebook className="mx-auto text-xl" />
+          <span className="text-xs mt-1 block">Facebook</span>
+        </a>
+        <a href={shareLinks.instagram} target="_blank" rel="noopener noreferrer"
+           className="bg-pink-600 text-white p-3 rounded-lg hover:bg-pink-700 transition text-center">
+          <FaInstagram className="mx-auto text-xl" />
+          <span className="text-xs mt-1 block">Instagram</span>
+        </a>
+        <a href={shareLinks.tiktok} target="_blank" rel="noopener noreferrer"
+           className="bg-black text-white p-3 rounded-lg hover:bg-gray-800 transition text-center">
+          <FaTiktok className="mx-auto text-xl" />
+          <span className="text-xs mt-1 block">TikTok</span>
+        </a>
+        <button onClick={copyToClipboard}
+                className="bg-gray-600 text-white p-3 rounded-lg hover:bg-gray-700 transition text-center">
+          <FaCopy className="mx-auto text-xl" />
+          <span className="text-xs mt-1 block">Copy Link</span>
         </button>
-      )}
+      </div>
 
-      <style jsx>{`
-        @keyframes slideIn {
-          from {
-            opacity: 0;
-            transform: translateX(-20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-        .animate-slideIn {
-          animation: slideIn 0.3s ease-out;
-        }
-        .animate-bounce-slow {
-          animation: bounce 2s infinite;
-        }
-        @keyframes bounce {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-10px); }
-        }
-      `}</style>
+      <div className="bg-yellow-50 rounded-lg p-3">
+        <p className="text-sm font-semibold mb-2">Your Affiliate Link:</p>
+        <code className="text-xs bg-white p-2 rounded block break-all">{getAffiliateLink()}</code>
+        <p className="text-xs text-gray-500 mt-2">
+          💰 Earn 10% commission on every sale through your link!
+        </p>
+      </div>
     </div>
   );
 }

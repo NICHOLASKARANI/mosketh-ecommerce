@@ -1,5 +1,11 @@
-﻿import './globals.css';
-import { Inter } from 'next/font/google';
+﻿
+import dynamic from 'next/dynamic';
+
+const RecentPurchasePopup = dynamic(() => import('@/components/RecentPurchasePopup'), { ssr: false });
+
+import dynamic from 'next/dynamic';
+
+const RecentPurchasePopup = dynamic(() => import('@/components/RecentPurchasePopup'), { ssr: false });
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -30,3 +36,4 @@ export default function RootLayout({ children }) {
     </html>
   );
 }
+

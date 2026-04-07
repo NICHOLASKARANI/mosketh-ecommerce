@@ -73,7 +73,7 @@ export default function KenyanPayment({ amount, onSelect }) {
             type="tel"
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
-            placeholder="0712345678"
+            placeholder="0742783907"
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
           />
           <p className="text-xs text-gray-500 mt-1">Enter the M-PESA/Airtel Money registered number</p>
@@ -94,4 +94,6 @@ export default function KenyanPayment({ amount, onSelect }) {
     </div>
   );
 }
+
+
 

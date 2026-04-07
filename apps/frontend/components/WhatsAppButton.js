@@ -6,7 +6,6 @@ export default function WhatsAppButton() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // Show button after scrolling
     const handleScroll = () => {
       setIsVisible(window.scrollY > 300);
     };
@@ -14,7 +13,8 @@ export default function WhatsAppButton() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const phoneNumber = '254742783907'; // Replace with your actual WhatsApp number
+  // Updated WhatsApp number: 0742783907
+  const phoneNumber = '254742783907';
   const message = encodeURIComponent('Hello! I am interested in your products at Mosketh Perfumes & Beauty');
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
 
@@ -36,4 +36,3 @@ export default function WhatsAppButton() {
     </a>
   );
 }
-

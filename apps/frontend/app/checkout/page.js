@@ -223,7 +223,7 @@ export default function CheckoutPage() {
                     onChange={handleInputChange}
                     required
                     className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-600"
-                    placeholder="0712345678"
+                    placeholder="0742783907"
                   />
                 </div>
 
@@ -368,3 +368,4 @@ export default function CheckoutPage() {
     </>
   );
 }
+

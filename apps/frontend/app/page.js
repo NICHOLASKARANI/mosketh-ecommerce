@@ -1,12 +1,19 @@
 ﻿'use client';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
-import { productAPI } from '@/lib/productAPI';
-import { FaTruck, FaShieldAlt, FaHeadset, FaStar } from 'react-icons/fa';
+
+import BundleDeals from '@/components/BundleDeals';
+
+import BundleDeals from '@/components/BundleDeals';
+
+import BundleDeals from '@/components/BundleDeals';
+
+import BundleDeals from '@/components/BundleDeals';
+
+import BundleDeals from '@/components/BundleDeals';
+
+import BundleDeals from '@/components/BundleDeals';
+
+import BundleDeals from '@/components/BundleDeals';
 
 export default function Home() {
   const [products, setProducts] = useState([]);
@@ -36,7 +43,61 @@ export default function Home() {
         <div className="min-h-screen flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
         </div>
-        <Footer />
+
+      {/* Bundle Deals Section */}
+      <section className="py-20 bg-gradient-to-r from-green-50 to-teal-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <BundleDeals />
+        </div>
+      </section> 
+      {/* Bundle Deals Section */}
+      <section className="py-20 bg-gradient-to-r from-green-50 to-teal-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <BundleDeals />
+        </div>
+      </section> 
+      {/* Bundle Deals Section */}
+      <section className="py-20 bg-gradient-to-r from-green-50 to-teal-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <BundleDeals />
+        </div>
+      </section> 
+      {/* Bundle Deals Section */}
+      <section className="py-20 bg-gradient-to-r from-green-50 to-teal-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <BundleDeals />
+        </div>
+      </section> 
+      {/* Bundle Deals Section */}
+      <section className="py-20 bg-gradient-to-r from-green-50 to-teal-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <BundleDeals />
+        </div>
+      </section> 
+      {/* Bundle Deals Section */}
+      <section className="py-20 bg-gradient-to-r from-green-50 to-teal-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <BundleDeals />
+        </div>
+      </section> 
+      {/* Bundle Deals Section */}
+      <section className="py-20 bg-gradient-to-r from-green-50 to-teal-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <BundleDeals />
+        </div>
+      </section> 
+      {/* Bundle Deals Section */}
+      <section className="py-20 bg-gradient-to-r from-green-50 to-teal-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <BundleDeals />
+        </div>
+      </section> 
+      {/* Bundle Deals Section */}
+      <section className="py-20 bg-gradient-to-r from-green-50 to-teal-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <BundleDeals />
+        </div>
+      </section><Footer />
       </>
     );
   }
@@ -104,7 +165,50 @@ export default function Home() {
           </div>
         </div>
       </section>
-      <Footer />
+
+      {/* Bundle Deals Section */}
+      <section className="py-20 bg-gradient-to-r from-green-50 to-teal-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <BundleDeals />
+        </div>
+      </section> 
+      {/* Bundle Deals Section */}
+      <section className="py-20 bg-gradient-to-r from-green-50 to-teal-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <BundleDeals />
+        </div>
+      </section> 
+      {/* Bundle Deals Section */}
+      <section className="py-20 bg-gradient-to-r from-green-50 to-teal-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <BundleDeals />
+        </div>
+      </section> 
+      {/* Bundle Deals Section */}
+      <section className="py-20 bg-gradient-to-r from-green-50 to-teal-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <BundleDeals />
+        </div>
+      </section> 
+      {/* Bundle Deals Section */}
+      <section className="py-20 bg-gradient-to-r from-green-50 to-teal-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <BundleDeals />
+        </div>
+      </section> 
+      {/* Bundle Deals Section */}
+      <section className="py-20 bg-gradient-to-r from-green-50 to-teal-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <BundleDeals />
+        </div>
+      </section> 
+      {/* Bundle Deals Section */}
+      <section className="py-20 bg-gradient-to-r from-green-50 to-teal-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <BundleDeals />
+        </div>
+      </section><Footer />
     </>
   );
 }
+

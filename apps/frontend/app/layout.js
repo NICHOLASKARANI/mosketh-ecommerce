@@ -1,11 +1,27 @@
 ﻿
-import dynamic from 'next/dynamic';
-
-const RecentPurchasePopup = dynamic(() => import('@/components/RecentPurchasePopup'), { ssr: false });
 
 import dynamic from 'next/dynamic';
 
-const RecentPurchasePopup = dynamic(() => import('@/components/RecentPurchasePopup'), { ssr: false });
+const EmailCapturePopup = dynamic(() => import('@/components/EmailCapturePopup'), { ssr: false });
+const AbandonedCartTracker = dynamic(() => import('@/components/AbandonedCartTracker'), { ssr: false });
+
+const RecentPurchasePopup = dynamic(() => 
+import dynamic from 'next/dynamic';
+
+const EmailCapturePopup = dynamic(() => import('@/components/EmailCapturePopup'), { ssr: false });
+const AbandonedCartTracker = dynamic(() => import('@/components/AbandonedCartTracker'), { ssr: false });
+
+
+import dynamic from 'next/dynamic';
+
+const EmailCapturePopup = dynamic(() => import('@/components/EmailCapturePopup'), { ssr: false });
+const AbandonedCartTracker = dynamic(() => import('@/components/AbandonedCartTracker'), { ssr: false });
+
+const RecentPurchasePopup = dynamic(() => 
+import dynamic from 'next/dynamic';
+
+const EmailCapturePopup = dynamic(() => import('@/components/EmailCapturePopup'), { ssr: false });
+const AbandonedCartTracker = dynamic(() => import('@/components/AbandonedCartTracker'), { ssr: false });
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -36,4 +52,5 @@ export default function RootLayout({ children }) {
     </html>
   );
 }
+
 

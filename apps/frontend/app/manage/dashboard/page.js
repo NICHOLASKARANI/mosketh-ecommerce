@@ -230,20 +230,31 @@ export default function AdminDashboard() {
                   <div>
                     <label className="block text-sm font-medium mb-2">Category *</label>
                     <select
-                      name="category"
-                      value={formData.category}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
-                    >
-                      <option value="mens-perfumes">Men's Perfumes</option>
-                      <option value="womens-perfumes">Women's Perfumes</option>
-                      <option value="unisex-perfumes">Unisex Perfumes</option>
-                      <option value="body-oils">Body Oils</option>
-                      <option value="face-creams">Face Creams</option>
-                      <option value="hair-products">Hair Products</option>
-                      <option value="gift-sets">Gift Sets</option>
-                    </select>
+  name="category"
+  value={formData.category}
+  onChange={handleInputChange}
+  required
+  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+>
+  <option value="mens-perfumes">Men's Perfumes</option>
+  <option value="womens-perfumes">Women's Perfumes</option>
+  <option value="unisex-perfumes">Unisex Perfumes</option>
+  <option value="deodorants">Deodorants</option>
+  <option value="body-mists">Body Mists</option>
+  <option value="lotions">Lotions</option>
+  <option value="body-creams">Body Creams/Solids</option>
+  <option value="soaps">Soaps</option>
+  <option value="shower-gels">Shower Gels</option>
+  <option value="body-scrubs">Body Scrubs</option>
+  <option value="facial-scrubs">Facial Scrubs</option>
+  <option value="face-serums">Face Serums</option>
+  <option value="lip-oils">Lip Oils</option>
+  <option value="face-masks">Face Masks</option>
+  <option value="body-oils">Body Oils</option>
+  <option value="face-creams">Face Creams</option>
+  <option value="hair-products">Hair Products</option>
+  <option value="gift-sets">Gift Sets</option>
+</select>
                   </div>
 
                   <div>
@@ -420,3 +431,4 @@ export default function AdminDashboard() {
     </div>
   );
 }
+

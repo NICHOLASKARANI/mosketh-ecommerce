@@ -54,7 +54,7 @@ export default function OrderTracker({ orderId, phoneNumber }) {
 
         <div className="text-center">
           <a 
-            href={`https://wa.me/254700000000?text=Hello! I need help with my order #${trackingNumber}`}
+            href={`https://wa.me/254742783907?text=Hello! I need help with my order #${trackingNumber}`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-green-600 hover:text-green-700 text-sm"
@@ -66,3 +66,4 @@ export default function OrderTracker({ orderId, phoneNumber }) {
     </div>
   );
 }
+

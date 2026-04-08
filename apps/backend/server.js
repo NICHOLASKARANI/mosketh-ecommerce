@@ -1,5 +1,4 @@
-﻿// Force redeploy - 2026-04-08 10:33:00
-import express from 'express';
+﻿import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -27,7 +26,7 @@ app.use(cors({
 app.options('*', cors());
 app.use(express.json({ limit: '50mb' }));
 
-// MongoDB Connection with better error handling
+// MongoDB Connection
 const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
@@ -46,8 +45,6 @@ const connectDB = async () => {
     console.log('✅ Connected to MongoDB');
   } catch (err) {
     console.error('❌ MongoDB connection error:', err.message);
-    console.error('Please check your MONGODB_URI environment variable');
-    // Retry connection after 10 seconds
     setTimeout(connectDB, 10000);
   }
 };
@@ -101,4 +98,3 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
-

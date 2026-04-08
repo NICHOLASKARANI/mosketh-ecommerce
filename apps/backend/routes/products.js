@@ -70,7 +70,6 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-
 // Debug endpoint to check category schema
 router.get('/debug/schema', async (req, res) => {
   try {
@@ -87,5 +86,4 @@ router.get('/debug/schema', async (req, res) => {
   }
 });
 
-
-
+export default router;

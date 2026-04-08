@@ -1,4 +1,5 @@
-﻿import express from 'express';
+﻿// Force redeploy - 2026-04-08 10:33:00
+import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -100,3 +101,4 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
+

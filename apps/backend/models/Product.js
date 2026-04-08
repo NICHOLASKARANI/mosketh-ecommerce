@@ -13,9 +13,9 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: true,
     enum: [
-      'mens-perfumes', 
-      'womens-perfumes', 
-      'unisex-perfumes', 
+      'mens-perfumes',
+      'womens-perfumes',
+      'unisex-perfumes',
       'deodorants',
       'body-mists',
       'lotions',
@@ -27,9 +27,9 @@ const productSchema = new mongoose.Schema({
       'face-serums',
       'lip-oils',
       'face-masks',
-      'body-oils', 
-      'face-creams', 
-      'hair-products', 
+      'body-oils',
+      'face-creams',
+      'hair-products',
       'gift-sets'
     ]
   },

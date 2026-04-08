@@ -70,4 +70,22 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-export default router;
+
+// Debug endpoint to check category schema
+router.get('/debug/schema', async (req, res) => {
+  try {
+    const Product = mongoose.model('Product');
+    const schemaPaths = Product.schema.paths;
+    const categoryEnum = schemaPaths.category?.enumValues || [];
+    res.json({ 
+      message: 'Schema info',
+      categoryEnum: categoryEnum,
+      categoriesCount: categoryEnum.length
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+

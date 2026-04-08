@@ -12,7 +12,26 @@ const productSchema = new mongoose.Schema({
   category: {
     type: String,
     required: true,
-    enum: ['mens-perfumes', 'womens-perfumes', 'unisex-perfumes', 'body-oils', 'face-creams', 'hair-products', 'gift-sets']
+    enum: [
+      'mens-perfumes', 
+      'womens-perfumes', 
+      'unisex-perfumes', 
+      'deodorants',
+      'body-mists',
+      'lotions',
+      'body-creams',
+      'soaps',
+      'shower-gels',
+      'body-scrubs',
+      'facial-scrubs',
+      'face-serums',
+      'lip-oils',
+      'face-masks',
+      'body-oils', 
+      'face-creams', 
+      'hair-products', 
+      'gift-sets'
+    ]
   },
   description: {
     type: String,
@@ -43,7 +62,6 @@ const productSchema = new mongoose.Schema({
   }
 });
 
-// Update the updatedAt timestamp on save
 productSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   next();

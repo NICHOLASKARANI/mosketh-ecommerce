@@ -21,13 +21,15 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-    <meta name="google-adsense-account" content="ca-pub-8092780057970019">
-        {/* Google AdSense */}
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8092780057970019"
-      crossOrigin="anonymous"></script>
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/favicon.png" type="image/png" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        {/* Google AdSense */}
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8092780057970019"
+          crossOrigin="anonymous"
+        />
       </head>
       <body className={inter.className}>
         {children}
@@ -38,5 +40,3 @@ export default function RootLayout({ children }) {
     </html>
   );
 }
-
-

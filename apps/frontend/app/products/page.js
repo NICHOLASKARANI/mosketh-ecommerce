@@ -1,19 +1,6 @@
-﻿'use client';
+﻿import AdBanner from '@/components/AdBanner';
+'use client';
 
-
-import AdBanner from '@/components/AdBanner';
-
-import AdBanner from '@/components/AdBanner';
-
-import AdBanner from '@/components/AdBanner';
-
-import AdBanner from '@/components/AdBanner';
-
-import AdBanner from '@/components/AdBanner';
-
-import AdBanner from '@/components/AdBanner';
-
-import AdBanner from '@/components/AdBanner';
 
 const categories = [
   { id: 'all', name: 'All Products' },
@@ -162,4 +149,5 @@ export default function ProductsPage() {
     </>
   );
 }
+
 

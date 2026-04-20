@@ -1,6 +1,13 @@
-﻿import AdBanner from '@/components/AdBanner';
-'use client';
+﻿'use client';
 
+import React, { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
+import ProductCard from '@/components/ProductCard';
+import { productAPI } from '@/lib/productAPI';
+import { FaSearch } from 'react-icons/fa';
+import AdBanner from '@/components/AdBanner';
 
 const categories = [
   { id: 'all', name: 'All Products' },
@@ -18,8 +25,8 @@ const categories = [
   { id: 'face-serums', name: "Face Serums" },
   { id: 'lip-oils', name: "Lip Oils" },
   { id: 'face-masks', name: "Face Masks" },
-  { id: 'face-creams', name: "Face Creams" },
   { id: 'body-oils', name: "Body Oils" },
+  { id: 'face-creams', name: "Face Creams" },
   { id: 'hair-products', name: "Hair Products" },
   { id: 'gift-sets', name: "Gift Sets" }
 ];
@@ -35,9 +42,7 @@ function ProductsContent() {
 
   useEffect(() => {
     const category = searchParams.get('category');
-    if (category) {
-      setSelectedCategory(category);
-    }
+    if (category) setSelectedCategory(category);
   }, [searchParams]);
 
   useEffect(() => {
@@ -68,9 +73,7 @@ function ProductsContent() {
       filtered = filtered.filter(p => p.category === selectedCategory);
     }
     if (searchTerm) {
-      filtered = filtered.filter(p =>
-        p.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      filtered = filtered.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
     }
     switch (sortBy) {
       case 'price-low': filtered.sort((a, b) => a.priceKES - b.priceKES); break;
@@ -97,10 +100,6 @@ function ProductsContent() {
         </div>
       </div>
       <main className="max-w-7xl mx-auto px-4 py-12">
-        {/* Ad Banner */}
-        <div className="max-w-7xl mx-auto px-4 mb-8">
-          <AdBanner slot="1234567891" format="rectangle" style={{ minHeight: '250px' }} />
-        </div>
         <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="relative">
@@ -122,6 +121,12 @@ function ProductsContent() {
             </select>
           </div>
         </div>
+
+        {/* Ad Banner */}
+        <div className="mb-8">
+          <AdBanner slot="1234567891" format="rectangle" style={{ minHeight: '250px' }} />
+        </div>
+
         <p className="text-gray-600 mb-6">Showing <span className="font-semibold">{filteredProducts.length}</span> products</p>
         {filteredProducts.length === 0 ? (
           <div className="text-center py-16 bg-white rounded-2xl shadow-lg">
@@ -149,5 +154,3 @@ export default function ProductsPage() {
     </>
   );
 }
-
-

@@ -1,12 +1,19 @@
 ﻿'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
-import ProductCard from '@/components/ProductCard';
-import { productAPI } from '@/lib/productAPI';
-import { FaSearch } from 'react-icons/fa';
+
+import AdBanner from '@/components/AdBanner';
+
+import AdBanner from '@/components/AdBanner';
+
+import AdBanner from '@/components/AdBanner';
+
+import AdBanner from '@/components/AdBanner';
+
+import AdBanner from '@/components/AdBanner';
+
+import AdBanner from '@/components/AdBanner';
+
+import AdBanner from '@/components/AdBanner';
 
 const categories = [
   { id: 'all', name: 'All Products' },
@@ -103,6 +110,10 @@ function ProductsContent() {
         </div>
       </div>
       <main className="max-w-7xl mx-auto px-4 py-12">
+        {/* Ad Banner */}
+        <div className="max-w-7xl mx-auto px-4 mb-8">
+          <AdBanner slot="1234567891" format="rectangle" style={{ minHeight: '250px' }} />
+        </div>
         <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="relative">
@@ -151,3 +162,4 @@ export default function ProductsPage() {
     </>
   );
 }
+
